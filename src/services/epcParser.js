@@ -239,8 +239,10 @@ function extractAssessorDetails(text) {
 async function parseEPCFromBuffer(buffer) {
   const pdfParse = require('pdf-parse');
   const data = await pdfParse(buffer);
-  const text = data.text;
+  return parseEPCFromText(data.text);
+}
 
+function parseEPCFromText(text) {
   const { address, postcode } = extractAddress(text);
   const { currentRating, currentScore, potentialRating, potentialScore } = extractRatings(text);
   const energyCosts = extractEnergyCosts(text);
@@ -270,4 +272,4 @@ async function parseEPCFromPath(filePath) {
   return parseEPCFromBuffer(buffer);
 }
 
-module.exports = { parseEPCFromBuffer, parseEPCFromPath };
+module.exports = { parseEPCFromBuffer, parseEPCFromPath, parseEPCFromText };

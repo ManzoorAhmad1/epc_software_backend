@@ -19,7 +19,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 // Multer for handling both EPC + photo upload in one request
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB max
+  limits: { fileSize: 20 * 1024 * 1024, fieldSize: 15 * 1024 * 1024 }, // 20 MB file, 15 MB field (for base64 map image)
 });
 
 // POST /api/report/generate
@@ -33,13 +33,21 @@ router.post(
     try {
       const files = req.files;
 
-      if (!files?.epc?.[0]) {
-        res.status(400).json({ error: 'EPC PDF file is required' });
+      // Parse EPC — either from uploaded PDF or manually entered JSON
+      let epcData;
+      if (req.body.manualEpcData) {
+        try {
+          epcData = JSON.parse(req.body.manualEpcData);
+        } catch {
+          res.status(400).json({ error: 'Invalid manual EPC data' });
+          return;
+        }
+      } else if (files?.epc?.[0]) {
+        epcData = await parseEPCFromBuffer(files.epc[0].buffer);
+      } else {
+        res.status(400).json({ error: 'EPC PDF file or manual EPC data is required' });
         return;
       }
-
-      // Parse EPC
-      const epcData = await parseEPCFromBuffer(files.epc[0].buffer);
 
       // Handle property photo
       let propertyPhotoBase64;
@@ -48,23 +56,28 @@ router.post(
         // Manual photo upload — use actual mime type (jpeg/png/webp)
         const mime = files.photo[0].mimetype || 'image/jpeg';
         propertyPhotoBase64 = `data:${mime};base64,${files.photo[0].buffer.toString('base64')}`;
-      } else if (req.body.mapAddress) {
-        // If frontend sent exact coords (already geocoded), use them directly
+      } else if (req.body.mapImageBase64) {
+        // Canvas screenshot sent directly from frontend (data URI string) — preferred
+        propertyPhotoBase64 = req.body.mapImageBase64;
+        console.log('Using canvas-captured map image from frontend, size:', req.body.mapImageBase64.length);
+      }
+
+      // If no canvas image (capture failed), fall back to Mapbox Static API using coords
+      if (!propertyPhotoBase64) {
         const lng = parseFloat(req.body.mapLng);
         const lat = parseFloat(req.body.mapLat);
         const zoom = parseFloat(req.body.mapZoom) || 17;
         if (!isNaN(lng) && !isNaN(lat)) {
-          console.log(`Fetching Mapbox image using coords: ${lng}, ${lat}, zoom: ${zoom}`);
+          console.log(`Fetching Mapbox static image for coords: ${lng}, ${lat}, zoom: ${zoom}`);
           try {
             const imgBuffer = await fetchPropertyMapImageByCoords(lng, lat, zoom);
             if (imgBuffer) {
-              // Mapbox static images are always PNG
               propertyPhotoBase64 = `data:image/png;base64,${imgBuffer.toString('base64')}`;
             }
           } catch (mapErr) {
-            console.warn('Mapbox image fetch failed (no image will be used):', mapErr.message);
+            console.warn('Mapbox image fetch failed:', mapErr.message);
           }
-        } else {
+        } else if (req.body.mapAddress) {
           // Fall back to geocoding from address string
           const addressToUse = req.body.mapAddress || epcData.propertyAddress;
           console.log(`Fetching Mapbox image for: ${addressToUse}`);
