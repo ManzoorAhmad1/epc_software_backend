@@ -1,0 +1,8 @@
+uploads/
+backend/dist/
+node_modules/
+frontend/node_modules/
+/.next/
+/.next/
+.env
+*.log

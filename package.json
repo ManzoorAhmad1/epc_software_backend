@@ -1,0 +1,39 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
+    "@types/axios": "^0.9.36",
+    "axios": "^1.13.6",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0",
+    "multer": "^2.1.1",
+    "pdf-parse": "^2.4.5",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.4.0",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19.2.14",
+    "nodemon": "^3.1.14",
+    "react": "^19.2.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
