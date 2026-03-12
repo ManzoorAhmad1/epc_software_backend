@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   page: {
     backgroundColor: COLORS.white,
     fontFamily: 'Helvetica',
-    paddingBottom: 40,
+    paddingBottom: 36,
   },
   // ── Header ──
   pageHeader: {
@@ -81,14 +81,18 @@ const styles = StyleSheet.create({
   // ── Page footer ──
   pageFooter: {
     position: 'absolute',
-    bottom: 16,
-    left: 30,
-    right: 30,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 36,
+    backgroundColor: COLORS.deepForestGreen,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 30,
   },
   footerText: {
-    color: COLORS.mediumGrey,
+    color: COLORS.white,
     fontSize: 8,
   },
   // ── Cover Page ──
@@ -223,6 +227,7 @@ const styles = StyleSheet.create({
   pageBody: {
     paddingHorizontal: 30,
     paddingTop: 20,
+    paddingBottom: 46,
   },
   // ── EPC Scale bar ──
   scaleContainer: {
