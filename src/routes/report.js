@@ -51,9 +51,10 @@ router.post(
         // If frontend sent exact coords (already geocoded), use them directly
         const lng = parseFloat(req.body.mapLng);
         const lat = parseFloat(req.body.mapLat);
+        const zoom = parseInt(req.body.mapZoom) || 17;
         if (!isNaN(lng) && !isNaN(lat)) {
-          console.log(`Fetching Mapbox image using coords: ${lng}, ${lat}`);
-          propertyPhotoBase64 = (await fetchPropertyMapImageByCoords(lng, lat)) ?? undefined;
+          console.log(`Fetching Mapbox image using coords: ${lng}, ${lat}, zoom: ${zoom}`);
+          propertyPhotoBase64 = (await fetchPropertyMapImageByCoords(lng, lat, zoom)) ?? undefined;
           if (propertyPhotoBase64) {
             propertyPhotoBase64 = propertyPhotoBase64.toString('base64');
           }

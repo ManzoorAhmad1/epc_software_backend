@@ -20,8 +20,8 @@ async function fetchPropertyMapImage(address, width = 600, height = 400) {
   return fetchPropertyMapImageByCoords(coords.lng, coords.lat, width, height);
 }
 
-async function fetchPropertyMapImageByCoords(lng, lat, width = 600, height = 400) {
-  const url = `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-s+ff0000(${lng},${lat})/${lng},${lat},17,0/${width}x${height}@2x`;
+async function fetchPropertyMapImageByCoords(lng, lat, zoom = 17, width = 600, height = 400) {
+  const url = `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-s+ff0000(${lng},${lat})/${lng},${lat},${zoom},0/${width}x${height}@2x`;
   const response = await axios.get(url, {
     params: { access_token: MAPBOX_KEY },
     responseType: 'arraybuffer',
