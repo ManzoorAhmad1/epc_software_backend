@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext js index.js",
-    "build": "echo No build step needed",
+    "build": "echo No build step",
     "start": "node index.js",
     "render-build": "npm install"
   },
