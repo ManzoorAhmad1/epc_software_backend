@@ -234,3 +234,91 @@ export function getNextSteps(): string[] {
     'Keep your EPC — it is valid for 10 years and will be needed if you sell or rent the property.',
   ];
 }
+
+// ─── AI Enhancement ───────────────────────────────────────────────────────────
+
+interface AIEnhancedText {
+  ratingExplanation: string;
+  improvementPotential: string;
+  featureExplanations: Record<string, string>;
+  improvementExplanations: Array<{ plainTitle: string; plainDescription: string }>;
+  benefits: string[];
+  nextSteps: string[];
+}
+
+export async function enhanceWithAI(epcData: EPCData): Promise<void> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return;
+
+  try {
+    const { OpenAI } = await import('openai');
+    const client = new OpenAI({ apiKey });
+
+    const featuresText = epcData.features
+      .map((f) => `- ${f.name}: ${f.description}${f.energyEfficiency ? ` (efficiency: ${f.energyEfficiency})` : ''}`)
+      .join('\n');
+
+    const improvementsText = epcData.improvements
+      .map(
+        (imp, i) =>
+          `${i + 1}. ${imp.description} | Cost: ${imp.typicalCostRange} | Saving: ${imp.typicalAnnualSaving}`
+      )
+      .join('\n');
+
+    const prompt = `You are an expert energy assessor writing a friendly customer report for a homeowner.
+Given this EPC data, produce clear, warm, jargon-free plain-English text for each section.
+Keep a helpful and encouraging tone. Write for a non-technical UK homeowner.
+
+PROPERTY: ${epcData.propertyAddress}
+CURRENT RATING: ${epcData.currentRating} (score ${epcData.currentScore})
+POTENTIAL RATING: ${epcData.potentialRating} (score ${epcData.potentialScore})
+ENERGY COSTS: Heating ${epcData.energyCosts.heating}, Hot water ${epcData.energyCosts.hotWater}, Lighting ${epcData.energyCosts.lighting}
+CO2 CURRENT: ${epcData.currentCO2} | CO2 POTENTIAL: ${epcData.potentialCO2}
+
+FEATURES:
+${featuresText}
+
+IMPROVEMENTS:
+${improvementsText}
+
+Return ONLY valid JSON in this exact shape (no markdown fences):
+{
+  "ratingExplanation": "2-3 sentence paragraph about what the current rating means for this specific home",
+  "improvementPotential": "1-2 sentence paragraph about the potential rating if improvements are made",
+  "featureExplanations": {
+    "<feature name exactly as given>": "2 sentence plain-English explanation of that feature and what it means for the home"
+  },
+  "improvementExplanations": [
+    { "plainTitle": "Short friendly title", "plainDescription": "2-3 sentence explanation of why this improvement helps and what it involves" }
+  ],
+  "benefits": ["benefit 1", "benefit 2", "benefit 3", "benefit 4", "benefit 5"],
+  "nextSteps": ["step 1", "step 2", "step 3", "step 4", "step 5"]
+}
+
+The featureExplanations object must have one key per feature listed above.
+The improvementExplanations array must have exactly ${epcData.improvements.length} items in the same order as improvements listed above.
+The benefits and nextSteps arrays should each have 5-6 items tailored to this specific property.`;
+
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 3000,
+    });
+
+    const raw = response.choices[0]?.message?.content?.trim() ?? '';
+    // Strip any accidental markdown code fences
+    const jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    const ai: AIEnhancedText = JSON.parse(jsonStr);
+
+    epcData.aiRatingExplanation = ai.ratingExplanation;
+    epcData.aiImprovementPotential = ai.improvementPotential;
+    epcData.aiFeatureExplanations = ai.featureExplanations;
+    epcData.aiImprovementExplanations = ai.improvementExplanations;
+    epcData.aiBenefits = ai.benefits;
+    epcData.aiNextSteps = ai.nextSteps;
+  } catch (err) {
+    // Non-fatal — fall back to rule-based text
+    console.warn('AI enhancement failed, using rule-based fallback:', err instanceof Error ? err.message : err);
+  }
+}

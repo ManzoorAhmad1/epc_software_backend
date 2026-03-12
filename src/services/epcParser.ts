@@ -57,6 +57,14 @@ export interface EPCData {
 
   // Raw text for debugging
   rawText: string;
+
+  // AI-enhanced plain English text (populated by enhanceWithAI if key is set)
+  aiRatingExplanation?: string;
+  aiImprovementPotential?: string;
+  aiFeatureExplanations?: Record<string, string>;
+  aiImprovementExplanations?: Array<{ plainTitle: string; plainDescription: string }>;
+  aiBenefits?: string[];
+  aiNextSteps?: string[];
 }
 
 function extractBetween(text: string, start: string, end: string): string {

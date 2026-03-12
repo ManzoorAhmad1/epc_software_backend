@@ -18,6 +18,7 @@ import {
   explainImprovement,
   getBenefitsList,
   getNextSteps,
+  enhanceWithAI,
 } from './plainEnglish';
 
 // Color scheme
@@ -665,13 +666,16 @@ function RatingMeaningPage({ data }: { data: EPCData }) {
       <PageHeader title="What Your Energy Rating Means" />
       <View style={styles.pageBody}>
         <Text style={styles.sectionTitle}>What Your Energy Rating Means</Text>
-        <Text style={styles.bodyText}>{explainRating(data.currentRating, data.currentScore)}</Text>
         <Text style={styles.bodyText}>
-          {explainImprovementPotential(
-            data.currentRating,
-            data.potentialRating,
-            data.potentialScore
-          )}
+          {data.aiRatingExplanation ?? explainRating(data.currentRating, data.currentScore)}
+        </Text>
+        <Text style={styles.bodyText}>
+          {data.aiImprovementPotential ??
+            explainImprovementPotential(
+              data.currentRating,
+              data.potentialRating,
+              data.potentialScore
+            )}
         </Text>
 
         <EPCScaleBar
@@ -776,7 +780,7 @@ function KeyFeaturesPage({ data }: { data: EPCData }) {
             </View>
             <View style={styles.featureCardExplanation}>
               <Text style={styles.featureCardExplanationText}>
-                {explainFeature(feature)}
+                {data.aiFeatureExplanations?.[feature.name] ?? explainFeature(feature)}
               </Text>
             </View>
           </View>
@@ -898,7 +902,8 @@ function RecommendedImprovementsPage({ data }: { data: EPCData }) {
         </Text>
 
         {data.improvements.map((improvement, index) => {
-          const { plainTitle, plainDescription } = explainImprovement(improvement);
+          const { plainTitle, plainDescription } =
+            data.aiImprovementExplanations?.[index] ?? explainImprovement(improvement);
           return (
             <View key={index} style={styles.improvementCard}>
               <View style={styles.improvementHeader}>
@@ -931,7 +936,7 @@ function RecommendedImprovementsPage({ data }: { data: EPCData }) {
 }
 
 function PotentialBenefitsPage({ data }: { data: EPCData }) {
-  const benefits = getBenefitsList(data);
+  const benefits = data.aiBenefits ?? getBenefitsList(data);
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Potential Benefits" />
@@ -966,7 +971,7 @@ function PotentialBenefitsPage({ data }: { data: EPCData }) {
 }
 
 function NextStepsPage({ data }: { data: EPCData }) {
-  const steps = getNextSteps();
+  const steps = data.aiNextSteps ?? getNextSteps();
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Next Steps" />
@@ -1050,6 +1055,9 @@ export async function generateEPCReport(
   epcData: EPCData,
   propertyPhotoBase64?: string
 ): Promise<Buffer> {
+  // Enrich with GPT-generated plain English (falls back silently if key missing/fails)
+  await enhanceWithAI(epcData);
+
   const doc = (
     <Document
       title={`EPC Report – ${epcData.propertyAddress}`}

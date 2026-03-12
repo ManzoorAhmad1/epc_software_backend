@@ -14,3 +14,5 @@ services:
         sync: false
       - key: MAPBOX_API_KEY
         sync: false
+      - key: OPENAI_API_KEY
+        sync: false
