@@ -1,10 +1,12 @@
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { parseEPCFromBuffer } from '../services/epcParser';
-import { generateEPCReport } from '../services/pdfGenerator';
-import { fetchPropertyMapImage } from '../services/mapbox';
+'use strict';
+
+const { Router } = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { parseEPCFromBuffer } = require('../services/epcParser.js');
+const { generateEPCReport } = require('../services/pdfGenerator.js');
+const { fetchPropertyMapImage, fetchPropertyMapImageByCoords } = require('../services/mapbox.js');
 
 const router = Router();
 
@@ -21,16 +23,15 @@ const upload = multer({
 });
 
 // POST /api/report/generate
-// Accepts: epc (PDF), photo (image, optional), streetViewUrl (string, optional)
 router.post(
   '/generate',
   upload.fields([
     { name: 'epc', maxCount: 1 },
     { name: 'photo', maxCount: 1 },
   ]),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     try {
-      const files = req.files as Record<string, Express.Multer.File[]>;
+      const files = req.files;
 
       if (!files?.epc?.[0]) {
         res.status(400).json({ error: 'EPC PDF file is required' });
@@ -41,17 +42,29 @@ router.post(
       const epcData = await parseEPCFromBuffer(files.epc[0].buffer);
 
       // Handle property photo
-      let propertyPhotoBase64: string | undefined;
+      let propertyPhotoBase64;
 
       if (files?.photo?.[0]) {
         // Manual photo upload
         propertyPhotoBase64 = files.photo[0].buffer.toString('base64');
       } else if (req.body.mapAddress) {
-        // Auto-fetch satellite map image from Mapbox using the address
-        const addressToUse = req.body.mapAddress || epcData.propertyAddress;
-        if (addressToUse) {
+        // If frontend sent exact coords (already geocoded), use them directly
+        const lng = parseFloat(req.body.mapLng);
+        const lat = parseFloat(req.body.mapLat);
+        if (!isNaN(lng) && !isNaN(lat)) {
+          console.log(`Fetching Mapbox image using coords: ${lng}, ${lat}`);
+          propertyPhotoBase64 = (await fetchPropertyMapImageByCoords(lng, lat)) ?? undefined;
+          if (propertyPhotoBase64) {
+            propertyPhotoBase64 = propertyPhotoBase64.toString('base64');
+          }
+        } else {
+          // Fall back to geocoding from address string
+          const addressToUse = req.body.mapAddress || epcData.propertyAddress;
           console.log(`Fetching Mapbox image for: ${addressToUse}`);
-          propertyPhotoBase64 = (await fetchPropertyMapImage(addressToUse)) ?? undefined;
+          const imgBuffer = await fetchPropertyMapImage(addressToUse);
+          if (imgBuffer) {
+            propertyPhotoBase64 = imgBuffer.toString('base64');
+          }
         }
       }
 
@@ -86,13 +99,12 @@ router.post(
 );
 
 // POST /api/report/preview-data
-// Returns parsed EPC data without generating the PDF (for live preview)
 router.post(
   '/preview-data',
   upload.fields([{ name: 'epc', maxCount: 1 }]),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     try {
-      const files = req.files as Record<string, Express.Multer.File[]>;
+      const files = req.files;
 
       if (!files?.epc?.[0]) {
         res.status(400).json({ error: 'EPC PDF file is required' });
@@ -100,7 +112,7 @@ router.post(
       }
 
       const epcData = await parseEPCFromBuffer(files.epc[0].buffer);
-      const { rawText: _raw, ...dataToSend } = epcData;
+      const { rawText, ...dataToSend } = epcData;
 
       res.json({ success: true, data: dataToSend });
     } catch (error) {
@@ -114,8 +126,7 @@ router.post(
 );
 
 // GET /api/report/list
-// List all previously generated reports
-router.get('/list', (_req: Request, res: Response) => {
+router.get('/list', (_req, res) => {
   try {
     const files = fs.readdirSync(UPLOADS_DIR).filter((f) => f.endsWith('.pdf'));
     const reports = files.map((f) => ({
@@ -130,4 +141,4 @@ router.get('/list', (_req: Request, res: Response) => {
   }
 });
 
-export default router;
+module.exports = router;

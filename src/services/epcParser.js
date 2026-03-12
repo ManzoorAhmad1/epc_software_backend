@@ -1,73 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
-import * as fs from 'fs';
+'use strict';
+const fs = require('fs');
 
-export interface EnergyFeature {
-  name: string;
-  description: string;
-  energyEfficiency?: string;
-  environmentalImpact?: string;
-}
+// ─── Parser ──────────────────────────────────────────────────────────────────
 
-export interface Improvement {
-  description: string;
-  typicalCostRange: string;
-  typicalAnnualSaving: string;
-  ratingImprovement?: string;
-}
-
-export interface EnergyCosts {
-  heating: string;
-  hotWater: string;
-  lighting: string;
-  total: string;
-}
-
-export interface EPCData {
-  // Property
-  propertyAddress: string;
-  postcode: string;
-
-  // Ratings
-  currentRating: string;
-  currentScore: number;
-  potentialRating: string;
-  potentialScore: number;
-
-  // Energy costs
-  energyCosts: EnergyCosts;
-
-  // CO2 / environmental
-  currentCO2: string;
-  potentialCO2: string;
-  environmentalRatingCurrent: string;
-  environmentalRatingPotential: string;
-
-  // Features
-  features: EnergyFeature[];
-
-  // Improvements
-  improvements: Improvement[];
-
-  // Assessor
-  assessorName: string;
-  assessmentDate: string;
-  companyName: string;
-  assessorContact: string;
-
-  // Raw text for debugging
-  rawText: string;
-
-  // AI-enhanced plain English text (populated by enhanceWithAI if key is set)
-  aiRatingExplanation?: string;
-  aiImprovementPotential?: string;
-  aiFeatureExplanations?: Record<string, string>;
-  aiImprovementExplanations?: Array<{ plainTitle: string; plainDescription: string }>;
-  aiBenefits?: string[];
-  aiNextSteps?: string[];
-}
-
-function extractBetween(text: string, start: string, end: string): string {
+function extractBetween(text, start, end) {
   const startIdx = text.indexOf(start);
   if (startIdx === -1) return '';
   const from = startIdx + start.length;
@@ -75,7 +11,7 @@ function extractBetween(text: string, start: string, end: string): string {
   return endIdx === -1 ? text.slice(from).trim() : text.slice(from, endIdx).trim();
 }
 
-function matchFirst(text: string, patterns: RegExp[]): string {
+function matchFirst(text, patterns) {
   for (const pattern of patterns) {
     const m = text.match(pattern);
     if (m && m[1]) return m[1].trim();
@@ -83,27 +19,20 @@ function matchFirst(text: string, patterns: RegExp[]): string {
   return '';
 }
 
-function extractAddress(text: string): { address: string; postcode: string } {
-  // UK postcodes regex
+function extractAddress(text) {
   const postcodeRegex = /\b([A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})\b/i;
   const postcodeMatch = text.match(postcodeRegex);
   const postcode = postcodeMatch ? postcodeMatch[1].toUpperCase() : '';
 
-  // Try to find address lines near the postcode
   let address = '';
   if (postcode) {
-    const pcIdx = text.indexOf(postcodeMatch![0]);
-    // Take ~200 chars before postcode and grab last few non-empty lines
+    const pcIdx = text.indexOf(postcodeMatch[0]);
     const before = text.slice(Math.max(0, pcIdx - 300), pcIdx);
-    const lines = before
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
+    const lines = before.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
     const addrLines = lines.slice(-4);
     address = [...addrLines, postcode].join(', ');
   }
 
-  // Fallback: look for "Address" label
   if (!address) {
     address = matchFirst(text, [
       /Address[:\s]+([^\n]+)/i,
@@ -114,13 +43,7 @@ function extractAddress(text: string): { address: string; postcode: string } {
   return { address, postcode };
 }
 
-function extractRatings(text: string): {
-  currentRating: string;
-  currentScore: number;
-  potentialRating: string;
-  potentialScore: number;
-} {
-  // Patterns for "Current energy rating  D" and "Potential energy rating  C"
+function extractRatings(text) {
   const currentRating = matchFirst(text, [
     /Current energy rating\s+([A-G])/i,
     /current energy efficiency rating[:\s]+([A-G])/i,
@@ -143,7 +66,6 @@ function extractRatings(text: string): {
     /potential energy efficiency rating[:\s]+[A-G]\s+(\d+)/i,
   ]);
 
-  // Fallback: look for standalone rating letters with numbers nearby
   const ratingScorePattern = /\b([A-G])\s+(\d{2,3})\b/g;
   const matches = [...text.matchAll(ratingScorePattern)];
 
@@ -157,11 +79,16 @@ function extractRatings(text: string): {
   if (!pot && matches.length >= 2) pot = matches[1][1];
   if (!potScore && matches.length >= 2) potScore = parseInt(matches[1][2]) || 0;
 
-  return { currentRating: cur || 'D', currentScore: curScore || 63, potentialRating: pot || 'C', potentialScore: potScore || 75 };
+  return {
+    currentRating: cur || 'D',
+    currentScore: curScore || 63,
+    potentialRating: pot || 'C',
+    potentialScore: potScore || 75,
+  };
 }
 
-function extractEnergyCosts(text: string): EnergyCosts {
-  const extract = (label: string) =>
+function extractEnergyCosts(text) {
+  const extract = (label) =>
     matchFirst(text, [
       new RegExp(`${label}[^\\n]*?£\\s*([\\d,]+)`, 'i'),
       new RegExp(`${label}\\s+([\\d,]+)\\s+per year`, 'i'),
@@ -180,12 +107,7 @@ function extractEnergyCosts(text: string): EnergyCosts {
   };
 }
 
-function extractCO2(text: string): {
-  currentCO2: string;
-  potentialCO2: string;
-  environmentalRatingCurrent: string;
-  environmentalRatingPotential: string;
-} {
+function extractCO2(text) {
   const currentCO2 = matchFirst(text, [
     /current.*?(\d+(?:\.\d+)?)\s*tonnes? of CO2/i,
     /CO2.*?current.*?(\d+(?:\.\d+)?)/i,
@@ -214,37 +136,22 @@ function extractCO2(text: string): {
   };
 }
 
-function extractFeatures(text: string): EnergyFeature[] {
+function extractFeatures(text) {
   const featureLabels = [
-    'Walls',
-    'Roof',
-    'Floor',
-    'Windows',
-    'Main heating',
-    'Main heating controls',
-    'Secondary heating',
-    'Hot water',
-    'Lighting',
+    'Walls', 'Roof', 'Floor', 'Windows',
+    'Main heating', 'Main heating controls',
+    'Secondary heating', 'Hot water', 'Lighting',
   ];
 
-  const features: EnergyFeature[] = [];
-
+  const features = [];
   for (const label of featureLabels) {
-    // Pattern to match label followed by description
-    const pattern = new RegExp(
-      `${label}\\s*[:\\-]?\\s*([^\\n]{5,120})`,
-      'i'
-    );
+    const pattern = new RegExp(`${label}\\s*[:\\-]?\\s*([^\\n]{5,120})`, 'i');
     const match = text.match(pattern);
     if (match) {
-      features.push({
-        name: label,
-        description: match[1].trim(),
-      });
+      features.push({ name: label, description: match[1].trim() });
     }
   }
 
-  // If no features found, return defaults
   if (features.length === 0) {
     return [
       { name: 'Walls', description: 'Solid brick, as built, no insulation (assumed)' },
@@ -259,76 +166,42 @@ function extractFeatures(text: string): EnergyFeature[] {
   return features;
 }
 
-function extractImprovements(text: string): Improvement[] {
-  const improvements: Improvement[] = [];
-
-  // Common improvement patterns in UK EPCs
+function extractImprovements(text) {
+  const improvements = [];
   const improvementKeywords = [
-    'Loft insulation',
-    'Cavity wall insulation',
-    'Floor insulation',
-    'Draught proofing',
-    'Low energy lighting',
-    'Solar water heating',
-    'Solar panels',
-    'Heat pump',
-    'Boiler upgrade',
-    'Smart controls',
-    'Double glazing',
-    'Solid wall insulation',
+    'Loft insulation', 'Cavity wall insulation', 'Floor insulation',
+    'Draught proofing', 'Low energy lighting', 'Solar water heating',
+    'Solar panels', 'Heat pump', 'Boiler upgrade',
+    'Smart controls', 'Double glazing', 'Solid wall insulation',
   ];
 
   for (const keyword of improvementKeywords) {
-    const regex = new RegExp(
-      `${keyword}[^]*?(?:£|cost|saving)[^\\n]{0,200}`,
-      'i'
-    );
+    const regex = new RegExp(`${keyword}[^]*?(?:£|cost|saving)[^\\n]{0,200}`, 'i');
     const match = text.match(regex);
     if (match) {
       const snippet = match[0];
       const costMatch = snippet.match(/£\s*([\d,]+)\s*[–\-]\s*£?\s*([\d,]+)/i);
       const savingMatch = snippet.match(/saving[^£]*£\s*([\d,]+)/i);
-
       improvements.push({
         description: keyword,
-        typicalCostRange: costMatch
-          ? `£${costMatch[1]} – £${costMatch[2]}`
-          : 'Contact installer for quote',
+        typicalCostRange: costMatch ? `£${costMatch[1]} – £${costMatch[2]}` : 'Contact installer for quote',
         typicalAnnualSaving: savingMatch ? `£${savingMatch[1]} per year` : 'See EPC for details',
       });
     }
   }
 
-  // Fallback improvements
   if (improvements.length === 0) {
     improvements.push(
-      {
-        description: 'Loft insulation (top up to 270mm)',
-        typicalCostRange: '£300 – £500',
-        typicalAnnualSaving: '£150 per year',
-      },
-      {
-        description: 'Draught proofing',
-        typicalCostRange: '£80 – £120',
-        typicalAnnualSaving: '£60 per year',
-      },
-      {
-        description: 'Low energy lighting (all fixed)',
-        typicalCostRange: '£50 – £100',
-        typicalAnnualSaving: '£35 per year',
-      }
+      { description: 'Loft insulation (top up to 270mm)', typicalCostRange: '£300 – £500', typicalAnnualSaving: '£150 per year' },
+      { description: 'Draught proofing', typicalCostRange: '£80 – £120', typicalAnnualSaving: '£60 per year' },
+      { description: 'Low energy lighting (all fixed)', typicalCostRange: '£50 – £100', typicalAnnualSaving: '£35 per year' },
     );
   }
 
-  return improvements.slice(0, 8); // Maximum 8 improvements
+  return improvements.slice(0, 8);
 }
 
-function extractAssessorDetails(text: string): {
-  assessorName: string;
-  assessmentDate: string;
-  companyName: string;
-  assessorContact: string;
-} {
+function extractAssessorDetails(text) {
   const assessorName = matchFirst(text, [
     /Assessor['']?s name[:\s]+([^\n]+)/i,
     /Assessor name[:\s]+([^\n]+)/i,
@@ -363,9 +236,10 @@ function extractAssessorDetails(text: string): {
   };
 }
 
-export async function parseEPCFromBuffer(buffer: Buffer): Promise<EPCData> {
+async function parseEPCFromBuffer(buffer) {
+  const pdfParse = require('pdf-parse');
   const data = await pdfParse(buffer);
-  const text: string = data.text;
+  const text = data.text;
 
   const { address, postcode } = extractAddress(text);
   const { currentRating, currentScore, potentialRating, potentialScore } = extractRatings(text);
@@ -391,7 +265,9 @@ export async function parseEPCFromBuffer(buffer: Buffer): Promise<EPCData> {
   };
 }
 
-export async function parseEPCFromPath(filePath: string): Promise<EPCData> {
+async function parseEPCFromPath(filePath) {
   const buffer = fs.readFileSync(filePath);
   return parseEPCFromBuffer(buffer);
 }
+
+module.exports = { parseEPCFromBuffer, parseEPCFromPath };

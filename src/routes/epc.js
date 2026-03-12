@@ -1,8 +1,8 @@
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { parseEPCFromBuffer } from '../services/epcParser';
+'use strict';
+
+const { Router } = require('express');
+const multer = require('multer');
+const { parseEPCFromBuffer } = require('../services/epcParser.js');
 
 const router = Router();
 
@@ -20,8 +20,7 @@ const upload = multer({
 });
 
 // POST /api/epc/parse
-// Upload an EPC PDF and parse its contents
-router.post('/parse', upload.single('epc'), async (req: Request, res: Response) => {
+router.post('/parse', upload.single('epc'), async (req, res) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: 'No EPC file uploaded' });
@@ -31,7 +30,7 @@ router.post('/parse', upload.single('epc'), async (req: Request, res: Response) 
     const epcData = await parseEPCFromBuffer(req.file.buffer);
 
     // Don't send raw text in the response (can be very large)
-    const { rawText: _raw, ...dataToSend } = epcData;
+    const { rawText, ...dataToSend } = epcData;
 
     res.json({ success: true, data: dataToSend });
   } catch (error) {
@@ -43,4 +42,4 @@ router.post('/parse', upload.single('epc'), async (req: Request, res: Response) 
   }
 });
 
-export default router;
+module.exports = router;

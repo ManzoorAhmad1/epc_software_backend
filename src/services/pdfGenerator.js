@@ -1,5 +1,7 @@
-import React from 'react';
-import {
+'use strict';
+
+const React = require('react');
+const {
   Document,
   Page,
   Text,
@@ -8,10 +10,9 @@ import {
   Image,
   renderToBuffer,
   Font,
-} from '@react-pdf/renderer';
+} = require('@react-pdf/renderer');
 
-import type { EPCData } from './epcParser';
-import {
+const {
   explainRating,
   explainImprovementPotential,
   explainFeature,
@@ -19,7 +20,7 @@ import {
   getBenefitsList,
   getNextSteps,
   enhanceWithAI,
-} from './plainEnglish';
+} = require('./plainEnglish');
 
 // Color scheme
 const COLORS = {
@@ -40,8 +41,8 @@ const COLORS = {
 };
 
 // Rating colour helper
-function getRatingColor(rating: string): string {
-  const map: Record<string, string> = {
+function getRatingColor(rating) {
+  const map = {
     A: COLORS.ratingA,
     B: COLORS.ratingB,
     C: COLORS.ratingC,
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-function PageHeader({ title }: { title: string }) {
+function PageHeader({ title }) {
   return (
     <View style={styles.pageHeader}>
       <View>
@@ -536,7 +537,7 @@ function PageHeader({ title }: { title: string }) {
   );
 }
 
-function PageFooter({ pageNum, address }: { pageNum: number; address: string }) {
+function PageFooter({ pageNum, address }) {
   return (
     <View style={styles.pageFooter} fixed>
       <Text style={styles.footerText}>{address}</Text>
@@ -555,13 +556,7 @@ const RATING_BANDS = [
   { letter: 'G', min: 1, max: 20, width: 160 },
 ];
 
-function EPCScaleBar({
-  currentRating,
-  potentialRating,
-}: {
-  currentRating: string;
-  potentialRating: string;
-}) {
+function EPCScaleBar({ currentRating, potentialRating }) {
   return (
     <View style={styles.scaleContainer}>
       {RATING_BANDS.map((band) => (
@@ -592,13 +587,7 @@ function EPCScaleBar({
 
 // ─── Pages ────────────────────────────────────────────────────────────────────
 
-function CoverPage({
-  data,
-  propertyPhotoBase64,
-}: {
-  data: EPCData;
-  propertyPhotoBase64?: string;
-}) {
+function CoverPage({ data, propertyPhotoBase64 }) {
   return (
     <Page size="A4" style={styles.coverPage}>
       {/* Property photo */}
@@ -660,7 +649,7 @@ function CoverPage({
   );
 }
 
-function RatingMeaningPage({ data }: { data: EPCData }) {
+function RatingMeaningPage({ data }) {
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="What Your Energy Rating Means" />
@@ -701,7 +690,7 @@ function RatingMeaningPage({ data }: { data: EPCData }) {
   );
 }
 
-function EnergyCostsPage({ data }: { data: EPCData }) {
+function EnergyCostsPage({ data }) {
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Estimated Energy Costs" />
@@ -758,7 +747,7 @@ function EnergyCostsPage({ data }: { data: EPCData }) {
   );
 }
 
-function KeyFeaturesPage({ data }: { data: EPCData }) {
+function KeyFeaturesPage({ data }) {
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Key Features of Your Home" />
@@ -791,7 +780,7 @@ function KeyFeaturesPage({ data }: { data: EPCData }) {
   );
 }
 
-function EnvironmentalImpactPage({ data }: { data: EPCData }) {
+function EnvironmentalImpactPage({ data }) {
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Environmental Impact" />
@@ -889,7 +878,7 @@ function EnvironmentalImpactPage({ data }: { data: EPCData }) {
   );
 }
 
-function RecommendedImprovementsPage({ data }: { data: EPCData }) {
+function RecommendedImprovementsPage({ data }) {
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Recommended Improvements" />
@@ -935,7 +924,7 @@ function RecommendedImprovementsPage({ data }: { data: EPCData }) {
   );
 }
 
-function PotentialBenefitsPage({ data }: { data: EPCData }) {
+function PotentialBenefitsPage({ data }) {
   const benefits = data.aiBenefits ?? getBenefitsList(data);
   return (
     <Page size="A4" style={styles.contentPage}>
@@ -970,8 +959,8 @@ function PotentialBenefitsPage({ data }: { data: EPCData }) {
   );
 }
 
-function NextStepsPage({ data }: { data: EPCData }) {
-  const steps = data.aiNextSteps ?? getNextSteps();
+function NextStepsPage({ data }) {
+  const steps = data.aiNextSteps ?? getNextSteps(data);
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Next Steps" />
@@ -1003,7 +992,7 @@ function NextStepsPage({ data }: { data: EPCData }) {
   );
 }
 
-function AssessorDetailsPage({ data }: { data: EPCData }) {
+function AssessorDetailsPage({ data }) {
   return (
     <Page size="A4" style={styles.contentPage}>
       <PageHeader title="Assessor Details" />
@@ -1051,10 +1040,7 @@ function AssessorDetailsPage({ data }: { data: EPCData }) {
 
 // ─── Main generator ───────────────────────────────────────────────────────────
 
-export async function generateEPCReport(
-  epcData: EPCData,
-  propertyPhotoBase64?: string
-): Promise<Buffer> {
+async function generateEPCReport(epcData, propertyPhotoBase64) {
   // Enrich with GPT-generated plain English (falls back silently if key missing/fails)
   await enhanceWithAI(epcData);
 
@@ -1078,3 +1064,5 @@ export async function generateEPCReport(
 
   return await renderToBuffer(doc);
 }
+
+module.exports = { generateEPCReport };
