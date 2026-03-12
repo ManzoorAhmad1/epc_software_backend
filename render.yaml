@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: epc-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: MAPBOX_API_KEY
+        sync: false
