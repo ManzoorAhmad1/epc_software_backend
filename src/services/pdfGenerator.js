@@ -593,7 +593,7 @@ function CoverPage({ data, propertyPhotoBase64 }) {
       {/* Property photo */}
       {propertyPhotoBase64 ? (
         <View style={styles.coverPhotoContainer}>
-          <Image src={`data:image/jpeg;base64,${propertyPhotoBase64}`} style={styles.coverPhoto} />
+          <Image src={propertyPhotoBase64} style={styles.coverPhoto} />
         </View>
       ) : (
         <View style={styles.coverPhotoPlaceholder}>

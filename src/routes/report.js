@@ -45,26 +45,36 @@ router.post(
       let propertyPhotoBase64;
 
       if (files?.photo?.[0]) {
-        // Manual photo upload
-        propertyPhotoBase64 = files.photo[0].buffer.toString('base64');
+        // Manual photo upload — use actual mime type (jpeg/png/webp)
+        const mime = files.photo[0].mimetype || 'image/jpeg';
+        propertyPhotoBase64 = `data:${mime};base64,${files.photo[0].buffer.toString('base64')}`;
       } else if (req.body.mapAddress) {
         // If frontend sent exact coords (already geocoded), use them directly
         const lng = parseFloat(req.body.mapLng);
         const lat = parseFloat(req.body.mapLat);
-        const zoom = parseInt(req.body.mapZoom) || 17;
+        const zoom = parseFloat(req.body.mapZoom) || 17;
         if (!isNaN(lng) && !isNaN(lat)) {
           console.log(`Fetching Mapbox image using coords: ${lng}, ${lat}, zoom: ${zoom}`);
-          propertyPhotoBase64 = (await fetchPropertyMapImageByCoords(lng, lat, zoom)) ?? undefined;
-          if (propertyPhotoBase64) {
-            propertyPhotoBase64 = propertyPhotoBase64.toString('base64');
+          try {
+            const imgBuffer = await fetchPropertyMapImageByCoords(lng, lat, zoom);
+            if (imgBuffer) {
+              // Mapbox static images are always PNG
+              propertyPhotoBase64 = `data:image/png;base64,${imgBuffer.toString('base64')}`;
+            }
+          } catch (mapErr) {
+            console.warn('Mapbox image fetch failed (no image will be used):', mapErr.message);
           }
         } else {
           // Fall back to geocoding from address string
           const addressToUse = req.body.mapAddress || epcData.propertyAddress;
           console.log(`Fetching Mapbox image for: ${addressToUse}`);
-          const imgBuffer = await fetchPropertyMapImage(addressToUse);
-          if (imgBuffer) {
-            propertyPhotoBase64 = imgBuffer.toString('base64');
+          try {
+            const imgBuffer = await fetchPropertyMapImage(addressToUse);
+            if (imgBuffer) {
+              propertyPhotoBase64 = `data:image/png;base64,${imgBuffer.toString('base64')}`;
+            }
+          } catch (mapErr) {
+            console.warn('Mapbox geocode fetch failed:', mapErr.message);
           }
         }
       }
