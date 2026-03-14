@@ -4,9 +4,19 @@ const { Router } = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+// Detect real image MIME type from buffer magic bytes (multer can trust wrong content-type from browser)
+function detectImageMime(buffer) {
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) return 'image/jpeg';
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) return 'image/png';
+  if (buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) return 'image/gif';
+  return 'image/jpeg'; // fallback
+}
 const { parseEPCFromBuffer } = require('../services/epcParser.js');
 const { generateEPCReport } = require('../services/pdfGenerator.js');
 const { fetchPropertyMapImage, fetchPropertyMapImageByCoords } = require('../services/mapbox.js');
+const sharp = require('sharp');
 
 const router = Router();
 
@@ -53,9 +63,18 @@ router.post(
       let propertyPhotoBase64;
 
       if (files?.photo?.[0]) {
-        // Manual photo upload — use actual mime type (jpeg/png/webp)
-        const mime = files.photo[0].mimetype || 'image/jpeg';
-        propertyPhotoBase64 = `data:${mime};base64,${files.photo[0].buffer.toString('base64')}`;
+        // Detect real MIME from magic bytes — browser can send wrong content-type (e.g. WebP labeled as JPEG)
+        let buf = files.photo[0].buffer;
+        const mime = detectImageMime(buf);
+        console.log('[Photo] detected mime:', mime, '(multer said:', files.photo[0].mimetype + ')');
+        // Convert WebP/GIF to JPEG since react-pdf renderer requires JPEG or PNG
+        if (mime === 'image/webp' || mime === 'image/gif') {
+          buf = await sharp(buf).jpeg({ quality: 92 }).toBuffer();
+          console.log('[Photo] converted', mime, '→ image/jpeg');
+          propertyPhotoBase64 = `data:image/jpeg;base64,${buf.toString('base64')}`;
+        } else {
+          propertyPhotoBase64 = `data:${mime};base64,${buf.toString('base64')}`;
+        }
       } else if (req.body.mapImageBase64) {
         // Canvas screenshot sent directly from frontend (data URI string) — preferred
         propertyPhotoBase64 = req.body.mapImageBase64;

@@ -10,6 +10,15 @@ const {
   Image,
   renderToBuffer,
   Font,
+  Svg,
+  Path,
+  Rect,
+  Circle,
+  Line,
+  Polyline,
+  Defs,
+  LinearGradient,
+  Stop,
 } = require('@react-pdf/renderer');
 
 const {
@@ -24,10 +33,10 @@ const {
 
 // Color scheme
 const COLORS = {
-  deepForestGreen: '#1F5E3B',
-  energyGreen: '#4CAF50',
-  softSage: '#DDEFE3',
-  darkGrey: '#333333',
+  deepForestGreen: '#113555',
+  energyGreen: '#007FC4',
+  softSage: '#E6F4FA',
+  darkGrey: '#000000',
   white: '#FFFFFF',
   lightGrey: '#F5F5F5',
   mediumGrey: '#888888',
@@ -112,7 +121,7 @@ const styles = StyleSheet.create({
   coverPhotoPlaceholder: {
     width: '100%',
     height: 240,
-    backgroundColor: '#2d7a50',
+    backgroundColor: '#0D2A42',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -593,63 +602,153 @@ function EPCScaleBar({ currentRating, potentialRating }) {
 // ─── Pages ────────────────────────────────────────────────────────────────────
 
 function CoverPage({ data, propertyPhotoBase64 }) {
+  // A4 page = 595pt wide. Card dimensions derived from fixed mid-section height.
+  // Mid section height = 295pt. Card: top:12 bottom:12 left:20 right:14
+  const CARD_W = 561; // 595 - 20 - 14
+  const CARD_H = 271; // 295 - 12 - 12
+
   return (
-    <Page size="A4" style={styles.coverPage}>
-      {/* Property photo */}
-      {propertyPhotoBase64 ? (
-        <View style={styles.coverPhotoContainer}>
-          <Image src={propertyPhotoBase64} style={styles.coverPhoto} />
-        </View>
-      ) : (
-        <View style={styles.coverPhotoPlaceholder}>
-          <Text style={styles.coverPhotoPlaceholderText}>Property Photo</Text>
-        </View>
-      )}
+    <Page size="A4" style={{ backgroundColor: '#dce8f4', fontFamily: 'Helvetica', flexDirection: 'column' }}>
 
-      <View style={styles.coverContent}>
-        <Text style={styles.coverMainTitle}>Understanding the Energy</Text>
-        <Text style={styles.coverMainTitle}>Performance of Your Home</Text>
-        <Text style={styles.coverSubTitle}>Your Personal EPC Explained in Plain English</Text>
+      {/* ── TOP-RIGHT BLUE WAVE (absolutely positioned, behind header text) ── */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 260 }}>
+        <Svg width="595" height="260" viewBox="0 0 595 260">
+          <Defs>
+            <LinearGradient id="blueMain" x1="595" y1="0" x2="200" y2="260" gradientUnits="userSpaceOnUse">
+              <Stop offset="0%" stopColor="#1060c0" />
+              <Stop offset="100%" stopColor="#0a3d96" />
+            </LinearGradient>
+            <LinearGradient id="silverRib" x1="595" y1="0" x2="250" y2="260" gradientUnits="userSpaceOnUse">
+              <Stop offset="0%" stopColor="#d0dff0" />
+              <Stop offset="60%" stopColor="#b8cfe8" />
+              <Stop offset="100%" stopColor="#a0bcd8" stopOpacity="0" />
+            </LinearGradient>
+          </Defs>
+          <Path d="M595 0 L595 260 Q521 226 421 170 Q322 114 211 46 Q136 6 75 0 Z" fill="url(#silverRib)" opacity="0.7" />
+          <Path d="M595 0 L595 240 Q508 200 409 143 Q316 91 217 32 Q161 6 112 0 Z" fill="url(#blueMain)" />
+          <Path d="M595 0 L595 176 Q533 143 458 100 Q384 59 322 22 Q285 6 254 0 Z" fill="#5a9ee0" opacity="0.45" />
+          <Path d="M595 240 Q508 200 409 143 Q316 91 217 32 Q161 6 112 0 L137 0 Q183 9 238 38 Q334 93 426 148 Q523 202 595 242 Z" fill="#7ab4e8" opacity="0.3" />
+        </Svg>
+      </View>
 
-        <View style={styles.coverAddressBox}>
-          <Text style={styles.coverAddressLabel}>Property Address</Text>
-          <Text style={styles.coverAddress}>{data.propertyAddress || 'Address not found'}</Text>
-          {data.postcode ? <Text style={styles.coverPostcode}>{data.postcode}</Text> : null}
+      {/* ── HEADER TEXT ── */}
+      <View style={{ paddingTop: 38, paddingLeft: 30, paddingRight: 30, paddingBottom: 18 }}>
+        <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Understanding</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, marginBottom: 4, gap: 8 }}>
+          <View style={{ height: 2, width: 32, backgroundColor: '#8da8c0' }} />
+          <Text style={{ fontSize: 13, color: '#0b3060', fontStyle: 'italic' }}> the </Text>
+          <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#1358b8' }}>Energy</Text>
+          <View style={{ height: 2, width: 32, backgroundColor: '#8da8c0' }} />
         </View>
+        <Text style={{ fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.1 }}>Performance of</Text>
+        <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
+      </View>
 
-        <View style={styles.ratingsRow}>
-          <View style={styles.ratingBox}>
-            <Text style={styles.ratingBoxLabel}>Current Rating</Text>
-            <View
-              style={[
-                styles.ratingBadge,
-                { backgroundColor: getRatingColor(data.currentRating) },
-              ]}
-            >
-              <Text style={styles.ratingLetter}>{data.currentRating}</Text>
+      {/* ── MID SECTION: fixed height, blue left band + white rounded card ── */}
+      <View style={{ height: 295, position: 'relative' }}>
+        {/* Blue vertical band — full section height */}
+        <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 42, backgroundColor: '#1255b0' }} />
+        {/* White rounded card — overlaps band by 22px on left */}
+        <View style={{
+          position: 'absolute',
+          left: 20, right: 14, top: 12, bottom: 12,
+          backgroundColor: '#ffffff',
+          borderRadius: 22,
+          overflow: 'hidden',
+        }}>
+          {propertyPhotoBase64 ? (
+            <Image
+              src={propertyPhotoBase64}
+              style={{ width: CARD_W, height: CARD_H, objectFit: 'cover' }}
+            />
+          ) : (
+            <View style={{ width: CARD_W, height: CARD_H, backgroundColor: '#e4eef8', alignItems: 'center', justifyContent: 'center' }}>
+              <Svg width="72" height="72" viewBox="0 0 72 72">
+                <Path d="M36 8 L66 30 V64 H6 V30 Z" stroke="#1255b0" strokeWidth="2.8" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                <Rect x="26" y="42" width="20" height="22" rx="2" stroke="#1255b0" strokeWidth="2.2" fill="none" />
+                <Rect x="14" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
+                <Rect x="46" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
+                <Path d="M36 8 L36 2" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+              </Svg>
+              <Text style={{ fontSize: 10, color: '#1255b0', marginTop: 12, fontFamily: 'Helvetica' }}>Property Photo</Text>
             </View>
-            <Text style={styles.ratingScore}>{data.currentScore} points</Text>
-          </View>
-
-          <View style={styles.ratingBox}>
-            <Text style={styles.ratingBoxLabel}>Potential Rating</Text>
-            <View
-              style={[
-                styles.ratingBadge,
-                { backgroundColor: getRatingColor(data.potentialRating) },
-              ]}
-            >
-              <Text style={styles.ratingLetter}>{data.potentialRating}</Text>
-            </View>
-            <Text style={styles.ratingScore}>{data.potentialScore} points</Text>
-          </View>
-        </View>
-
-        <View style={styles.coverDateRow}>
-          <Text style={styles.coverMeta}>Assessment Date: {data.assessmentDate}</Text>
-          <Text style={styles.coverMeta}>{data.companyName}</Text>
+          )}
         </View>
       </View>
+
+      {/* ── WAVE DIVIDER — full width, taller for visual impact ── */}
+      <View style={{ width: 595 }}>
+        <Svg width="595" height="65" viewBox="0 0 595 65" preserveAspectRatio="none">
+          <Path d="M0 0 L595 0 L595 32 Q447 8 298 30 Q149 52 0 26 Z" fill="#cddaea" />
+          <Path d="M0 26 Q149 52 298 30 Q447 8 595 32 L595 65 L0 65 Z" fill="#0e2f5e" />
+        </Svg>
+      </View>
+
+      {/* ── ADDRESS SECTION — full width dark navy ── */}
+      <View style={{ width: 595, backgroundColor: '#0e2f5e', paddingHorizontal: 30, paddingVertical: 22, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 5 }}>
+          <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' }}>
+            <Svg width="12" height="14" viewBox="0 0 20 20">
+              <Path d="M10 1.5C6.96 1.5 4.5 3.96 4.5 7c0 4.62 5.5 11.5 5.5 11.5S15.5 11.62 15.5 7C15.5 3.96 13.04 1.5 10 1.5zm0 7.75a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5z" fill="#ffffff" />
+            </Svg>
+          </View>
+          <Text style={{ fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>
+            {data.propertyAddress || 'Property Address'}
+          </Text>
+        </View>
+        {data.companyName ? (
+          <Text style={{ fontSize: 10, color: 'rgba(185,210,240,0.9)', marginTop: 2 }}>{data.companyName}</Text>
+        ) : null}
+        {data.postcode ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10 }}>
+            <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
+            <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 2.5 }}>{data.postcode}</Text>
+            <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
+          </View>
+        ) : null}
+      </View>
+
+      {/* ── ICONS BAR — fills rest of page ── */}
+      <View style={{ flex: 1, width: 595, backgroundColor: '#dce8f4', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 10 }}>
+        {/* Improve Efficiency */}
+        <View style={{ flex: 1, alignItems: 'center', gap: 8 }}>
+          <Svg width="52" height="52" viewBox="0 0 52 52">
+            <Path d="M26 8 L44 22 V44 H8 V22 Z" stroke="#1255b0" strokeWidth="2.2" fill="none" strokeLinejoin="round" />
+            <Rect x="19" y="30" width="14" height="14" rx="1.5" stroke="#1255b0" strokeWidth="1.8" fill="none" />
+            <Rect x="10" y="25" width="8" height="8" rx="1" stroke="#1255b0" strokeWidth="1.6" fill="none" />
+            <Rect x="34" y="25" width="8" height="8" rx="1" stroke="#1255b0" strokeWidth="1.6" fill="none" />
+            <Circle cx="38" cy="14" r="8" fill="#1255b0" />
+            <Polyline points="34,14 37,17 42,10" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </Svg>
+          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
+        </View>
+        <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
+        {/* Reduce Costs */}
+        <View style={{ flex: 1, alignItems: 'center', gap: 8 }}>
+          <Svg width="52" height="52" viewBox="0 0 52 52">
+            <Path d="M26 10 C18 10 13 16 13 22 C13 27 16.5 31 20 33.5 L20 38 L32 38 L32 33.5 C35.5 31 39 27 39 22 C39 16 34 10 26 10 Z" stroke="#1255b0" strokeWidth="2" fill="none" />
+            <Line x1="20" y1="40" x2="32" y2="40" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            <Line x1="21" y1="43" x2="31" y2="43" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            <Line x1="26" y1="5" x2="26" y2="2" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            <Line x1="37" y1="9" x2="39" y2="7" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            <Line x1="42" y1="22" x2="45" y2="22" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            <Line x1="15" y1="9" x2="13" y2="7" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            <Line x1="10" y1="22" x2="7" y2="22" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+          </Svg>
+          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
+        </View>
+        <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
+        {/* Lower Emissions */}
+        <View style={{ flex: 1, alignItems: 'center', gap: 8 }}>
+          <Svg width="52" height="52" viewBox="0 0 52 52">
+            <Path d="M18 44 Q10 32 18 20 Q22 14 30 13 Q25 23 23 34 Z" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinejoin="round" />
+            <Path d="M28 44 Q42 33 38 17 Q34 10 24 10 Q30 20 30 34 Z" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinejoin="round" />
+            <Path d="M26 44 Q26 40 26 34 Q24 30 22 26" stroke="#1255b0" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+          </Svg>
+          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Lower Emissions</Text>
+        </View>
+      </View>
+
     </Page>
   );
 }
@@ -1046,6 +1145,7 @@ function AssessorDetailsPage({ data }) {
 // ─── Main generator ───────────────────────────────────────────────────────────
 
 async function generateEPCReport(epcData, propertyPhotoBase64) {
+  console.log('[PDF] photo received:', propertyPhotoBase64 ? `YES (${propertyPhotoBase64.length} chars, type: ${propertyPhotoBase64.substring(0,30)})` : 'NO');
   // Enrich with GPT-generated plain English (falls back silently if key missing/fails)
   await enhanceWithAI(epcData);
 
