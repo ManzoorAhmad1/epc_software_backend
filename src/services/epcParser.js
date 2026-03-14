@@ -182,19 +182,21 @@ function extractImprovements(text) {
       const snippet = match[0];
       const costMatch = snippet.match(/£\s*([\d,]+)\s*[–\-]\s*£?\s*([\d,]+)/i);
       const savingMatch = snippet.match(/saving[^£]*£\s*([\d,]+)/i);
+      const ratingMatch = snippet.match(/(?:SAP|EPC|indicative|rating after)[^A-G]*([A-G])\s*\(?\s*(\d{1,3})\s*\)?/i);
       improvements.push({
         description: keyword,
         typicalCostRange: costMatch ? `£${costMatch[1]} – £${costMatch[2]}` : 'Contact installer for quote',
         typicalAnnualSaving: savingMatch ? `£${savingMatch[1]} per year` : 'See EPC for details',
+        ratingAfterImprovement: ratingMatch ? `${ratingMatch[1].toUpperCase()} (${ratingMatch[2]})` : null,
       });
     }
   }
 
   if (improvements.length === 0) {
     improvements.push(
-      { description: 'Loft insulation (top up to 270mm)', typicalCostRange: '£300 – £500', typicalAnnualSaving: '£150 per year' },
-      { description: 'Draught proofing', typicalCostRange: '£80 – £120', typicalAnnualSaving: '£60 per year' },
-      { description: 'Low energy lighting (all fixed)', typicalCostRange: '£50 – £100', typicalAnnualSaving: '£35 per year' },
+      { description: 'Loft insulation (top up to 270mm)', typicalCostRange: '£300 – £500', typicalAnnualSaving: '£150 per year', ratingAfterImprovement: null },
+      { description: 'Draught proofing', typicalCostRange: '£80 – £120', typicalAnnualSaving: '£60 per year', ratingAfterImprovement: null },
+      { description: 'Low energy lighting (all fixed)', typicalCostRange: '£50 – £100', typicalAnnualSaving: '£35 per year', ratingAfterImprovement: null },
     );
   }
 

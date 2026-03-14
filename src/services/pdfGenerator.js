@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   page: {
     backgroundColor: COLORS.white,
     fontFamily: 'Helvetica',
-    paddingBottom: 36,
+    paddingBottom: 24,
   },
   // ── Header ──
   pageHeader: {
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 36,
+    height: 24,
     backgroundColor: COLORS.deepForestGreen,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -603,9 +603,9 @@ function EPCScaleBar({ currentRating, potentialRating }) {
 
 function CoverPage({ data, propertyPhotoBase64 }) {
   // A4 page = 595pt wide. Card dimensions derived from fixed mid-section height.
-  // Mid section height = 295pt. Card: top:12 bottom:12 left:20 right:14
+  // Mid section height = 340pt. Card: top:12 bottom:12 left:20 right:14
   const CARD_W = 561; // 595 - 20 - 14
-  const CARD_H = 271; // 295 - 12 - 12
+  const CARD_H = 316; // 340 - 12 - 12
 
   return (
     <Page size="A4" style={{ backgroundColor: '#dce8f4', fontFamily: 'Helvetica', flexDirection: 'column' }}>
@@ -644,8 +644,8 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
       </View>
 
-      {/* ── MID SECTION: fixed height, blue left band + white rounded card ── */}
-      <View style={{ height: 295, position: 'relative' }}>
+      {/* ── MID SECTION: fixed height 340, blue left band + white rounded card ── */}
+      <View style={{ height: 340, position: 'relative' }}>
         {/* Blue vertical band — full section height */}
         <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 42, backgroundColor: '#1255b0' }} />
         {/* White rounded card — overlaps band by 22px on left */}
@@ -676,31 +676,31 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         </View>
       </View>
 
-      {/* ── WAVE DIVIDER — full width, taller for visual impact ── */}
+      {/* ── WAVE DIVIDER — full width ── */}
       <View style={{ width: 595 }}>
-        <Svg width="595" height="65" viewBox="0 0 595 65" preserveAspectRatio="none">
-          <Path d="M0 0 L595 0 L595 32 Q447 8 298 30 Q149 52 0 26 Z" fill="#cddaea" />
-          <Path d="M0 26 Q149 52 298 30 Q447 8 595 32 L595 65 L0 65 Z" fill="#0e2f5e" />
+        <Svg width="595" height="50" viewBox="0 0 595 50" preserveAspectRatio="none">
+          <Path d="M0 0 L595 0 L595 25 Q447 6 298 23 Q149 40 0 20 Z" fill="#cddaea" />
+          <Path d="M0 20 Q149 40 298 23 Q447 6 595 25 L595 50 L0 50 Z" fill="#0e2f5e" />
         </Svg>
       </View>
 
       {/* ── ADDRESS SECTION — full width dark navy ── */}
-      <View style={{ width: 595, backgroundColor: '#0e2f5e', paddingHorizontal: 30, paddingVertical: 22, alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 5 }}>
-          <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 595, backgroundColor: '#0e2f5e', paddingHorizontal: 30, paddingVertical: 14, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <View style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' }}>
             <Svg width="12" height="14" viewBox="0 0 20 20">
               <Path d="M10 1.5C6.96 1.5 4.5 3.96 4.5 7c0 4.62 5.5 11.5 5.5 11.5S15.5 11.62 15.5 7C15.5 3.96 13.04 1.5 10 1.5zm0 7.75a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5z" fill="#ffffff" />
             </Svg>
           </View>
-          <Text style={{ fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>
+          <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>
             {data.propertyAddress || 'Property Address'}
           </Text>
         </View>
         {data.companyName ? (
-          <Text style={{ fontSize: 10, color: 'rgba(185,210,240,0.9)', marginTop: 2 }}>{data.companyName}</Text>
+          <Text style={{ fontSize: 9, color: 'rgba(185,210,240,0.9)', marginTop: 1 }}>{data.companyName}</Text>
         ) : null}
         {data.postcode ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6 }}>
             <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
             <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 2.5 }}>{data.postcode}</Text>
             <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
@@ -709,10 +709,10 @@ function CoverPage({ data, propertyPhotoBase64 }) {
       </View>
 
       {/* ── ICONS BAR — fills rest of page ── */}
-      <View style={{ flex: 1, width: 595, backgroundColor: '#dce8f4', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 10 }}>
+      <View style={{ flex: 1, width: 595, backgroundColor: '#dce8f4', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 }}>
         {/* Improve Efficiency */}
-        <View style={{ flex: 1, alignItems: 'center', gap: 8 }}>
-          <Svg width="52" height="52" viewBox="0 0 52 52">
+        <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
+          <Svg width="36" height="36" viewBox="0 0 52 52">
             <Path d="M26 8 L44 22 V44 H8 V22 Z" stroke="#1255b0" strokeWidth="2.2" fill="none" strokeLinejoin="round" />
             <Rect x="19" y="30" width="14" height="14" rx="1.5" stroke="#1255b0" strokeWidth="1.8" fill="none" />
             <Rect x="10" y="25" width="8" height="8" rx="1" stroke="#1255b0" strokeWidth="1.6" fill="none" />
@@ -724,8 +724,8 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         </View>
         <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
         {/* Reduce Costs */}
-        <View style={{ flex: 1, alignItems: 'center', gap: 8 }}>
-          <Svg width="52" height="52" viewBox="0 0 52 52">
+        <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
+          <Svg width="36" height="36" viewBox="0 0 52 52">
             <Path d="M26 10 C18 10 13 16 13 22 C13 27 16.5 31 20 33.5 L20 38 L32 38 L32 33.5 C35.5 31 39 27 39 22 C39 16 34 10 26 10 Z" stroke="#1255b0" strokeWidth="2" fill="none" />
             <Line x1="20" y1="40" x2="32" y2="40" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
             <Line x1="21" y1="43" x2="31" y2="43" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
@@ -739,8 +739,8 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         </View>
         <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
         {/* Lower Emissions */}
-        <View style={{ flex: 1, alignItems: 'center', gap: 8 }}>
-          <Svg width="52" height="52" viewBox="0 0 52 52">
+        <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
+          <Svg width="36" height="36" viewBox="0 0 52 52">
             <Path d="M18 44 Q10 32 18 20 Q22 14 30 13 Q25 23 23 34 Z" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinejoin="round" />
             <Path d="M28 44 Q42 33 38 17 Q34 10 24 10 Q30 20 30 34 Z" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinejoin="round" />
             <Path d="M26 44 Q26 40 26 34 Q24 30 22 26" stroke="#1255b0" strokeWidth="1.8" fill="none" strokeLinecap="round" />
@@ -1014,6 +1014,12 @@ function RecommendedImprovementsPage({ data }) {
                     <Text style={styles.improvementMetaLabel}>Potential Annual Saving</Text>
                     <Text style={styles.improvementMetaValue}>
                       {improvement.typicalAnnualSaving}
+                    </Text>
+                  </View>
+                  <View style={styles.improvementMeta}>
+                    <Text style={styles.improvementMetaLabel}>Potential EPC Rating</Text>
+                    <Text style={styles.improvementMetaValue}>
+                      {improvement.ratingAfterImprovement || 'See EPC'}
                     </Text>
                   </View>
                 </View>
