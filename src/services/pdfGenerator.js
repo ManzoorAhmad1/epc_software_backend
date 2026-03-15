@@ -439,7 +439,6 @@ const styles = StyleSheet.create({
   co2BoxLabel: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
-    textTransform: 'uppercase',
     marginBottom: 4,
   },
   co2BoxValue: {
@@ -602,11 +601,6 @@ function EPCScaleBar({ currentRating, potentialRating }) {
 // ─── Pages ────────────────────────────────────────────────────────────────────
 
 function CoverPage({ data, propertyPhotoBase64 }) {
-  // A4 page = 595pt wide. Card dimensions derived from fixed mid-section height.
-  // Mid section height = 340pt. Card: top:12 bottom:12 left:20 right:14
-  const CARD_W = 561; // 595 - 20 - 14
-  const CARD_H = 316; // 340 - 12 - 12
-
   return (
     <Page size="A4" style={{ backgroundColor: '#dce8f4', fontFamily: 'Helvetica', flexDirection: 'column' }}>
 
@@ -644,36 +638,25 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
       </View>
 
-      {/* ── MID SECTION: fixed height 340, blue left band + white rounded card ── */}
-      <View style={{ height: 340, position: 'relative' }}>
-        {/* Blue vertical band — full section height */}
-        <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 42, backgroundColor: '#1255b0' }} />
-        {/* White rounded card — overlaps band by 22px on left */}
-        <View style={{
-          position: 'absolute',
-          left: 20, right: 14, top: 12, bottom: 12,
-          backgroundColor: '#ffffff',
-          borderRadius: 22,
-          overflow: 'hidden',
-        }}>
-          {propertyPhotoBase64 ? (
-            <Image
-              src={propertyPhotoBase64}
-              style={{ width: CARD_W, height: CARD_H, objectFit: 'cover' }}
-            />
-          ) : (
-            <View style={{ width: CARD_W, height: CARD_H, backgroundColor: '#e4eef8', alignItems: 'center', justifyContent: 'center' }}>
-              <Svg width="72" height="72" viewBox="0 0 72 72">
-                <Path d="M36 8 L66 30 V64 H6 V30 Z" stroke="#1255b0" strokeWidth="2.8" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-                <Rect x="26" y="42" width="20" height="22" rx="2" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-                <Rect x="14" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
-                <Rect x="46" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
-                <Path d="M36 8 L36 2" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-              </Svg>
-              <Text style={{ fontSize: 10, color: '#1255b0', marginTop: 12, fontFamily: 'Helvetica' }}>Property Photo</Text>
-            </View>
-          )}
-        </View>
+      {/* ── PHOTO SECTION: full width, no card/band ── */}
+      <View style={{ height: 360, width: 595, overflow: 'hidden' }}>
+        {propertyPhotoBase64 ? (
+          <Image
+            src={propertyPhotoBase64}
+            style={{ width: 595, height: 360, objectFit: 'cover' }}
+          />
+        ) : (
+          <View style={{ width: 595, height: 360, backgroundColor: '#c8daea', alignItems: 'center', justifyContent: 'center' }}>
+            <Svg width="72" height="72" viewBox="0 0 72 72">
+              <Path d="M36 8 L66 30 V64 H6 V30 Z" stroke="#1255b0" strokeWidth="2.8" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+              <Rect x="26" y="42" width="20" height="22" rx="2" stroke="#1255b0" strokeWidth="2.2" fill="none" />
+              <Rect x="14" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
+              <Rect x="46" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
+              <Path d="M36 8 L36 2" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            </Svg>
+            <Text style={{ fontSize: 10, color: '#1255b0', marginTop: 12, fontFamily: 'Helvetica' }}>Property Photo</Text>
+          </View>
+        )}
       </View>
 
       {/* ── WAVE DIVIDER — full width ── */}
@@ -702,7 +685,7 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         {data.postcode ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6 }}>
             <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
-            <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 2.5 }}>{data.postcode}</Text>
+            <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 1 }}>{data.postcode}</Text>
             <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
           </View>
         ) : null}
@@ -723,17 +706,19 @@ function CoverPage({ data, propertyPhotoBase64 }) {
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
         </View>
         <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
-        {/* Reduce Costs */}
+        {/* Reduce Costs — £ coin icon */}
         <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
           <Svg width="36" height="36" viewBox="0 0 52 52">
-            <Path d="M26 10 C18 10 13 16 13 22 C13 27 16.5 31 20 33.5 L20 38 L32 38 L32 33.5 C35.5 31 39 27 39 22 C39 16 34 10 26 10 Z" stroke="#1255b0" strokeWidth="2" fill="none" />
-            <Line x1="20" y1="40" x2="32" y2="40" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            <Line x1="21" y1="43" x2="31" y2="43" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            <Line x1="26" y1="5" x2="26" y2="2" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            <Line x1="37" y1="9" x2="39" y2="7" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            <Line x1="42" y1="22" x2="45" y2="22" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            <Line x1="15" y1="9" x2="13" y2="7" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            <Line x1="10" y1="22" x2="7" y2="22" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            {/* coin circle */}
+            <Circle cx="26" cy="26" r="17" stroke="#1255b0" strokeWidth="2.2" fill="none" />
+            {/* £ sign: top serif bar */}
+            <Path d="M 22 17 Q 19 17 19 21 Q 19 25 22 25" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinecap="round" />
+            {/* £ sign: middle horizontal bar */}
+            <Line x1="17" y1="25" x2="24" y2="25" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            {/* £ sign: bottom horizontal bar */}
+            <Line x1="17" y1="33" x2="31" y2="33" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
+            {/* £ sign: vertical stem */}
+            <Line x1="19" y1="21" x2="19" y2="33" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
           </Svg>
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
         </View>
@@ -863,7 +848,7 @@ function KeyFeaturesPage({ data }) {
           and where heat may be lost.
         </Text>
 
-        {data.features.slice(0, 6).map((feature) => (
+        {data.features.slice(0, 8).map((feature) => (
           <View key={feature.name} style={styles.featureCard}>
             <View style={styles.featureCardHeader}>
               <Text style={styles.featureCardHeaderText}>{feature.name}</Text>
