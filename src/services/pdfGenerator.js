@@ -693,15 +693,19 @@ function CoverPage({ data, propertyPhotoBase64 }) {
 
       {/* ── ICONS BAR — fills rest of page ── */}
       <View style={{ flex: 1, width: 595, backgroundColor: '#dce8f4', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 }}>
-        {/* Improve Efficiency */}
+        {/* Improve Efficiency — simple house outline */}
         <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
           <Svg width="36" height="36" viewBox="0 0 52 52">
-            <Path d="M26 8 L44 22 V44 H8 V22 Z" stroke="#1255b0" strokeWidth="2.2" fill="none" strokeLinejoin="round" />
-            <Rect x="19" y="30" width="14" height="14" rx="1.5" stroke="#1255b0" strokeWidth="1.8" fill="none" />
-            <Rect x="10" y="25" width="8" height="8" rx="1" stroke="#1255b0" strokeWidth="1.6" fill="none" />
-            <Rect x="34" y="25" width="8" height="8" rx="1" stroke="#1255b0" strokeWidth="1.6" fill="none" />
-            <Circle cx="38" cy="14" r="8" fill="#1255b0" />
-            <Polyline points="34,14 37,17 42,10" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            {/* Roof */}
+            <Path d="M26 7 L46 24 H6 Z" stroke="#1255b0" strokeWidth="2.2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+            {/* Walls */}
+            <Rect x="9" y="24" width="34" height="21" stroke="#1255b0" strokeWidth="2.2" fill="none" />
+            {/* Door */}
+            <Rect x="20" y="31" width="12" height="14" rx="1.5" stroke="#1255b0" strokeWidth="1.8" fill="none" />
+            {/* Left window */}
+            <Rect x="11" y="27" width="7" height="7" rx="1" stroke="#1255b0" strokeWidth="1.5" fill="none" />
+            {/* Right window */}
+            <Rect x="34" y="27" width="7" height="7" rx="1" stroke="#1255b0" strokeWidth="1.5" fill="none" />
           </Svg>
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
         </View>
@@ -723,12 +727,23 @@ function CoverPage({ data, propertyPhotoBase64 }) {
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
         </View>
         <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
-        {/* Lower Emissions */}
+        {/* Lower Emissions — globe/earth icon */}
         <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
           <Svg width="36" height="36" viewBox="0 0 52 52">
-            <Path d="M18 44 Q10 32 18 20 Q22 14 30 13 Q25 23 23 34 Z" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinejoin="round" />
-            <Path d="M28 44 Q42 33 38 17 Q34 10 24 10 Q30 20 30 34 Z" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinejoin="round" />
-            <Path d="M26 44 Q26 40 26 34 Q24 30 22 26" stroke="#1255b0" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+            {/* Outer circle */}
+            <Circle cx="26" cy="26" r="17" stroke="#1255b0" strokeWidth="2.2" fill="none" />
+            {/* Equator */}
+            <Line x1="9" y1="26" x2="43" y2="26" stroke="#1255b0" strokeWidth="1.5" />
+            {/* Vertical centre meridian */}
+            <Line x1="26" y1="9" x2="26" y2="43" stroke="#1255b0" strokeWidth="1.5" />
+            {/* Left curved meridian */}
+            <Path d="M26 9 Q13 26 26 43" stroke="#1255b0" strokeWidth="1.5" fill="none" />
+            {/* Right curved meridian */}
+            <Path d="M26 9 Q39 26 26 43" stroke="#1255b0" strokeWidth="1.5" fill="none" />
+            {/* Upper latitude curve */}
+            <Path d="M11 18 Q26 13 41 18" stroke="#1255b0" strokeWidth="1.3" fill="none" />
+            {/* Lower latitude curve */}
+            <Path d="M11 34 Q26 39 41 34" stroke="#1255b0" strokeWidth="1.3" fill="none" />
           </Svg>
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Lower Emissions</Text>
         </View>
