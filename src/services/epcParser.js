@@ -379,27 +379,66 @@ function extractFeatures(text) {
 
 function extractImprovements(text) {
   const improvements = [];
-  const improvementKeywords = [
-    'Loft insulation', 'Cavity wall insulation', 'Floor insulation',
-    'Draught proofing', 'Low energy lighting', 'Solar water heating',
-    'Solar panels', 'Heat pump', 'Boiler upgrade',
-    'Smart controls', 'Double glazing', 'Solid wall insulation',
-  ];
 
-  for (const keyword of improvementKeywords) {
-    const regex = new RegExp(`${keyword}[^]*?(?:£|cost|saving)[^\\n]{0,200}`, 'i');
-    const match = text.match(regex);
-    if (match) {
-      const snippet = match[0];
-      const costMatch = snippet.match(/£\s*([\d,]+)\s*[–\-]\s*£?\s*([\d,]+)/i);
-      const savingMatch = snippet.match(/saving[^£]*£\s*([\d,]+)/i);
-      const ratingMatch = snippet.match(/(?:SAP|EPC|indicative|rating after)[^A-G]*([A-G])\s*\(?\s*(\d{1,3})\s*\)?/i);
+  // ── Strategy 1: gov.uk "Steps you could take to save energy" table ──────────
+  // Format per line: "1. Cavity wall insulation£900 - £1,500£52"
+  // or multiline:    "1. Loft insulation\n£300 - £500\n£56"
+  const stepsSection = text.match(/Steps you could take[^]*?(?=Advice on|Who to contact|$)/i);
+  if (stepsSection) {
+    const stepText = stepsSection[0];
+    // Each step: number, description, cost range, yearly saving (all run together by pdf-parse)
+    const stepRegex = /\d+\.\s+([A-Za-z][^\n\xa3]{3,80}?)\s*\xa3\s*([\d,]+)\s*[-\u2013]\s*\xa3?\s*([\d,]+)\s*\xa3\s*([\d,]+)/g;
+    let m;
+    while ((m = stepRegex.exec(stepText)) !== null) {
+      const desc = m[1].trim().replace(/\s+/g, ' ');
       improvements.push({
-        description: keyword,
-        typicalCostRange: costMatch ? `£${costMatch[1]} – £${costMatch[2]}` : 'Contact installer for quote',
-        typicalAnnualSaving: savingMatch ? `£${savingMatch[1]} per year` : 'See EPC for details',
-        ratingAfterImprovement: ratingMatch ? `${ratingMatch[1].toUpperCase()} (${ratingMatch[2]})` : null,
+        description: desc,
+        typicalCostRange: `\xa3${m[2]} \u2013 \xa3${m[3]}`,
+        typicalAnnualSaving: `\xa3${m[4]} per year`,
+        ratingAfterImprovement: null,
       });
+    }
+    // Fallback within steps section — cost only, no saving on same line
+    if (improvements.length === 0) {
+      const stepRegex2 = /\d+\.\s+([A-Za-z][^\n\xa3]{3,80}?)\s*\xa3\s*([\d,]+)\s*[-\u2013]\s*\xa3?\s*([\d,]+)/g;
+      while ((m = stepRegex2.exec(stepText)) !== null) {
+        const desc = m[1].trim().replace(/\s+/g, ' ');
+        // Try to find saving nearby
+        const savingM = stepText.slice(m.index, m.index + 200).match(/£\s*(\d+)\s*(?:per year)?$/m);
+        improvements.push({
+          description: desc,
+          typicalCostRange: `£${m[2]} – £${m[3]}`,
+          typicalAnnualSaving: savingM ? `£${savingM[1]} per year` : null,
+          ratingAfterImprovement: null,
+        });
+      }
+    }
+  }
+
+  // ── Strategy 2: keyword scan for formats not in steps table ─────────────────
+  if (improvements.length === 0) {
+    const improvementKeywords = [
+      'Loft insulation', 'Cavity wall insulation', 'Floor insulation',
+      'Draught proofing', 'Low energy lighting', 'Solar water heating',
+      'Solar panels', 'Heat pump', 'Boiler upgrade',
+      'Smart controls', 'Double glazing', 'Solid wall insulation',
+      'Internal wall insulation',
+    ];
+    for (const keyword of improvementKeywords) {
+      const regex = new RegExp(`${keyword}[^]*?(?:£|cost|saving)[^\\n]{0,200}`, 'i');
+      const match = text.match(regex);
+      if (match) {
+        const snippet = match[0];
+        const costMatch = snippet.match(/£\s*([\d,]+)\s*[–\-]\s*£?\s*([\d,]+)/i);
+        const savingMatch = snippet.match(/saving[^£]*£\s*([\d,]+)/i);
+        const ratingMatch = snippet.match(/(?:SAP|EPC|indicative|rating after)[^A-G]*([A-G])\s*\(?\s*(\d{1,3})\s*\)?/i);
+        improvements.push({
+          description: keyword,
+          typicalCostRange: costMatch ? `£${costMatch[1]} – £${costMatch[2]}` : 'Contact installer for quote',
+          typicalAnnualSaving: savingMatch ? `£${savingMatch[1]} per year` : null,
+          ratingAfterImprovement: ratingMatch ? `${ratingMatch[1].toUpperCase()} (${ratingMatch[2]})` : null,
+        });
+      }
     }
   }
 

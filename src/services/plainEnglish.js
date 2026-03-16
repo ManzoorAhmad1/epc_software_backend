@@ -31,7 +31,11 @@ function explainFeature(feature) {
     if (lowerDesc.includes('insulated') || lowerDesc.includes('cavity filled')) {
       return `Your walls are well insulated. This significantly reduces heat loss and keeps your home warmer for longer.`;
     } else if (lowerDesc.includes('no insulation') || lowerDesc.includes('as built')) {
-      return `Your walls currently have no insulation. Adding cavity or solid wall insulation is one of the most effective ways to reduce heat loss and lower your heating bills.`;
+      const hasExtensionCavity = lowerDesc.includes('sandstone') && lowerDesc.includes('cavity wall');
+      const base = `Your walls currently have no insulation. Adding cavity or solid wall insulation is one of the most effective ways to reduce heat loss and lower your heating bills.`;
+      return hasExtensionCavity
+        ? `${base} The extension is assumed to have cavity wall insulation.`
+        : base;
     }
     return `Your walls are a key factor in your home's energy performance. The current setup is: ${description}.`;
   }
@@ -41,6 +45,12 @@ function explainFeature(feature) {
       return `Your loft has good insulation depth, helping to trap warmth and reduce heating bills significantly.`;
     } else if (lowerDesc.includes('50mm') || lowerDesc.includes('100mm') || lowerDesc.includes('no insulation')) {
       return `Your loft insulation could be improved. Topping it up to 270mm is one of the cheapest and most impactful energy improvements available.`;
+    }
+    // Dual roof types: extension loft + main loft (e.g. "Pitched, insulated (assumed) | Pitched, 300 mm loft insulation")
+    const hasDualRoof = description.includes('|');
+    const has300mm = lowerDesc.includes('300 mm') || lowerDesc.includes('300mm');
+    if (hasDualRoof && has300mm) {
+      return `Your roof setup is: ${description}. It will not benefit by having anymore insulation in the extension loft, the main loft should be insulated to 300mm.`;
     }
     return `Your roof setup is: ${description}. Check with an assessor whether additional insulation would be beneficial.`;
   }
@@ -56,7 +66,7 @@ function explainFeature(feature) {
 
   if (name.toLowerCase().includes('heating')) {
     if (lowerDesc.includes('gas')) {
-      return `The property uses a gas heating system. Gas is currently one of the more cost-effective ways to heat a home, though upgrading to a modern condensing boiler can improve efficiency further.`;
+      return `The property uses a gas heating system. Gas is currently one of the more cost-effective ways to heat a home, though upgrading to a modern condensing boiler can improve efficiency further. (If it is a condensing boiler it will be efficient.)`;
     } else if (lowerDesc.includes('electric')) {
       return `The home uses electric heating. This can be expensive to run — upgrading to a heat pump or better controls may help reduce costs.`;
     }
@@ -69,7 +79,7 @@ function explainFeature(feature) {
     } else if (lowerDesc.includes('no low energy') || lowerDesc.includes('standard')) {
       return `Switching to LED bulbs throughout the home is a quick and cheap way to cut your electricity use.`;
     }
-    return `Your lighting setup: ${description}.`;
+    return `Your lighting setup: ${description}, ensure all your lights are low energy.`;
   }
 
   return `${name}: ${description}`;
@@ -78,10 +88,10 @@ function explainFeature(feature) {
 function explainImprovement(improvement) {
   const description = improvement.description || '';
   const typicalCostRange = improvement.typicalCostRange || 'Contact installer for quote';
-  const typicalAnnualSaving = improvement.typicalAnnualSaving || 'See EPC for details';
-  return {
+  const hasSaving = improvement.typicalAnnualSaving && improvement.typicalAnnualSaving !== 'See EPC for details';
+  const savingText = hasSaving ? ` and could save around ${improvement.typicalAnnualSaving}` : '';  return {
     plainTitle: description,
-    plainDescription: `This improvement typically costs ${typicalCostRange} and could save around ${typicalAnnualSaving}. It is a recommended measure to improve your home's energy efficiency and reduce your bills.`,
+    plainDescription: `This improvement typically costs ${typicalCostRange}${savingText}. It is a recommended measure to improve your home's energy efficiency and reduce your bills.`,
   };
 }
 
@@ -123,7 +133,7 @@ function getNextSteps(epcData) {
   }
 
   steps.push('Request quotes from at least three certified installers for any major work.');
-  steps.push('Check the Government\'s Simple Energy Advice website (simpleenergyadvice.org.uk) for up-to-date guidance and schemes.');
+  steps.push('Check the Government\'s Simple Energy Advice website (simpleenergyadvice.org.uk) for up-to-date guidance and schemes, or your assessor may have contacts in the energy efficiency industry and can guide you with your application.');
   steps.push('Consider commissioning a home energy survey for a tailored improvement plan.');
   steps.push('Once initial improvements are complete, revisit the remaining recommendations to maximise savings.');
 

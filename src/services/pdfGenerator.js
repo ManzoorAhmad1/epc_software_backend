@@ -569,7 +569,7 @@ const RATING_BANDS = [
   { letter: 'G', min: 1, max: 20, width: 160 },
 ];
 
-function EPCScaleBar({ currentRating, potentialRating }) {
+function EPCScaleBar({ currentRating, potentialRating, currentScore, potentialScore }) {
   return (
     <View style={styles.scaleContainer}>
       {RATING_BANDS.map((band) => (
@@ -586,11 +586,11 @@ function EPCScaleBar({ currentRating, potentialRating }) {
             {band.min}–{band.max}
           </Text>
           {currentRating.toUpperCase() === band.letter && (
-            <Text style={styles.currentMarker}>◄ Current</Text>
+            <Text style={styles.currentMarker}>◄ Current {currentScore}</Text>
           )}
           {potentialRating.toUpperCase() === band.letter &&
             potentialRating !== currentRating && (
-              <Text style={styles.potentialMarker}>◄ Potential</Text>
+              <Text style={styles.potentialMarker}>◄ Potential {potentialScore}</Text>
             )}
         </View>
       ))}
@@ -659,14 +659,6 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         )}
       </View>
 
-      {/* ── WAVE DIVIDER — full width ── */}
-      <View style={{ width: 595 }}>
-        <Svg width="595" height="50" viewBox="0 0 595 50" preserveAspectRatio="none">
-          <Path d="M0 0 L595 0 L595 25 Q447 6 298 23 Q149 40 0 20 Z" fill="#cddaea" />
-          <Path d="M0 20 Q149 40 298 23 Q447 6 595 25 L595 50 L0 50 Z" fill="#0e2f5e" />
-        </Svg>
-      </View>
-
       {/* ── ADDRESS SECTION — full width dark navy ── */}
       <View style={{ width: 595, backgroundColor: '#0e2f5e', paddingHorizontal: 30, paddingVertical: 14, alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -682,13 +674,7 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         {data.companyName ? (
           <Text style={{ fontSize: 9, color: 'rgba(185,210,240,0.9)', marginTop: 1 }}>{data.companyName}</Text>
         ) : null}
-        {data.postcode ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 6 }}>
-            <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
-            <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 1 }}>{data.postcode}</Text>
-            <View style={{ flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.25)' }} />
-          </View>
-        ) : null}
+
       </View>
 
       {/* ── ICONS BAR — fills rest of page ── */}
@@ -710,20 +696,11 @@ function CoverPage({ data, propertyPhotoBase64 }) {
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
         </View>
         <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
-        {/* Reduce Costs — £ coin icon */}
+        {/* Reduce Costs — normal £ sign */}
         <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
-          <Svg width="36" height="36" viewBox="0 0 52 52">
-            {/* coin circle */}
-            <Circle cx="26" cy="26" r="17" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-            {/* £ sign: top serif bar */}
-            <Path d="M 22 17 Q 19 17 19 21 Q 19 25 22 25" stroke="#1255b0" strokeWidth="2" fill="none" strokeLinecap="round" />
-            {/* £ sign: middle horizontal bar */}
-            <Line x1="17" y1="25" x2="24" y2="25" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            {/* £ sign: bottom horizontal bar */}
-            <Line x1="17" y1="33" x2="31" y2="33" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            {/* £ sign: vertical stem */}
-            <Line x1="19" y1="21" x2="19" y2="33" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-          </Svg>
+          <View style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: '#1255b0', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 22, color: '#1255b0', fontFamily: 'Helvetica-Bold', lineHeight: 1 }}>£</Text>
+          </View>
           <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
         </View>
         <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
@@ -774,6 +751,8 @@ function RatingMeaningPage({ data }) {
         <EPCScaleBar
           currentRating={data.currentRating}
           potentialRating={data.potentialRating}
+          currentScore={data.currentScore}
+          potentialScore={data.potentialScore}
         />
 
         <View style={styles.infoPanel}>
@@ -914,7 +893,7 @@ function EnvironmentalImpactPage({ data }) {
             >
               {data.currentCO2.replace(' per year', '')}
             </Text>
-            <Text style={[styles.co2BoxSub, { color: COLORS.darkGrey }]}>per year</Text>
+            <Text style={[styles.co2BoxSub, { color: COLORS.darkGrey }]}>Per Year</Text>
             <Text
               style={[
                 styles.co2BoxValue,
@@ -923,7 +902,7 @@ function EnvironmentalImpactPage({ data }) {
             >
               {data.environmentalRatingCurrent}
             </Text>
-            <Text style={[styles.co2BoxSub, { color: COLORS.mediumGrey }]}>rating</Text>
+            <Text style={[styles.co2BoxSub, { color: COLORS.mediumGrey }]}>Rating</Text>
           </View>
 
           <View
@@ -948,7 +927,7 @@ function EnvironmentalImpactPage({ data }) {
             >
               {data.potentialCO2.replace(' per year', '')}
             </Text>
-            <Text style={[styles.co2BoxSub, { color: COLORS.darkGrey }]}>per year</Text>
+            <Text style={[styles.co2BoxSub, { color: COLORS.darkGrey }]}>Per Year</Text>
             <Text
               style={[
                 styles.co2BoxValue,
@@ -957,7 +936,7 @@ function EnvironmentalImpactPage({ data }) {
             >
               {data.environmentalRatingPotential}
             </Text>
-            <Text style={[styles.co2BoxSub, { color: COLORS.mediumGrey }]}>rating</Text>
+            <Text style={[styles.co2BoxSub, { color: COLORS.mediumGrey }]}>Rating</Text>
           </View>
         </View>
 
@@ -970,7 +949,7 @@ function EnvironmentalImpactPage({ data }) {
         </View>
 
         <Text style={styles.bodyText}>
-          Environmental impact is rated on the same A–G scale as energy efficiency. An A
+          Environmental impact is rated on the same A to G scale as energy efficiency. An A
           rating means very low CO₂ emissions, while a G rating means very high emissions.
           If all improvements in this report were carried out, your home's environmental
           impact rating could improve from {data.environmentalRatingCurrent} to{' '}
@@ -1013,13 +992,13 @@ function RecommendedImprovementsPage({ data }) {
                   <View style={styles.improvementMeta}>
                     <Text style={styles.improvementMetaLabel}>Potential Annual Saving</Text>
                     <Text style={styles.improvementMetaValue}>
-                      {improvement.typicalAnnualSaving}
+                      {improvement.typicalAnnualSaving || 'Your assessor can guide you'}
                     </Text>
                   </View>
                   <View style={styles.improvementMeta}>
                     <Text style={styles.improvementMetaLabel}>Potential EPC Rating</Text>
                     <Text style={styles.improvementMetaValue}>
-                      {improvement.ratingAfterImprovement || 'See EPC'}
+                      {improvement.ratingAfterImprovement || 'Your assessor can guide you'}
                     </Text>
                   </View>
                 </View>
@@ -1139,7 +1118,7 @@ function AssessorDetailsPage({ data }) {
             transactions and rental compliance purposes. Always refer to your official EPC
             for legal and compliance requirements. Improvement costs and savings shown are
             typical estimates only — actual costs will vary depending on the property, the
-            installer, and current market prices.
+            installer, and current market prices, this report helps you understand your EPC.
           </Text>
         </View>
       </View>
