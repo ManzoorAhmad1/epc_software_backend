@@ -35,7 +35,7 @@ const path = require('path');
 const fs = require('fs');
 let COVER_BG_DATA = null;
 try {
-  const imgPath = path.join(__dirname, '../../../frontend/renderer/public/images/coverPage.png');
+  const imgPath = path.join(__dirname, '../../../frontend/renderer/public/images/ss.png');
   COVER_BG_DATA = `data:image/png;base64,${fs.readFileSync(imgPath).toString('base64')}`;
 } catch (e) {
   console.warn('[Cover] Background image not found:', e.message);

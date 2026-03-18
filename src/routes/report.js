@@ -63,7 +63,7 @@ router.post(
       let propertyPhotoBase64;
 
       if (files?.photo?.[0]) {
-        const wavePath = require('path').join(__dirname, '../../../frontend/renderer/public/images/coverPage.png');
+        const wavePath = require('path').join(__dirname, '../../../frontend/renderer/public/images/ss.png');
         const W = 1190, H = 1682;
         const photoTop = 430, centerH = 870; // photo covers canvas 430–1300
 
