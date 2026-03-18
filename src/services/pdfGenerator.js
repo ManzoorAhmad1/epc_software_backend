@@ -636,7 +636,7 @@ function CoverPage({ data, propertyPhotoBase64 }) {
       {/* ── ADDRESS SECTION — positioned over the navy bottom wave ── */}
       <View style={{
         position: 'absolute',
-        bottom: 78,
+        bottom: 145,
         left: 0,
         right: 0,
         paddingHorizontal: 30,
@@ -664,45 +664,45 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 72,
+        height: 130,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 10,
-        backgroundColor: 'rgba(220,232,244,0.92)',
+        backgroundColor: '#0b3060',
       }}>
         {/* Improve Efficiency */}
         <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
           <Svg width="32" height="32" viewBox="0 0 52 52">
-            <Path d="M26 7 L46 24 H6 Z" stroke="#1255b0" strokeWidth="2.2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-            <Rect x="9" y="24" width="34" height="21" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-            <Rect x="20" y="31" width="12" height="14" rx="1.5" stroke="#1255b0" strokeWidth="1.8" fill="none" />
-            <Rect x="11" y="27" width="7" height="7" rx="1" stroke="#1255b0" strokeWidth="1.5" fill="none" />
-            <Rect x="34" y="27" width="7" height="7" rx="1" stroke="#1255b0" strokeWidth="1.5" fill="none" />
+            <Path d="M26 7 L46 24 H6 Z" stroke="#ffffff" strokeWidth="2.2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+            <Rect x="9" y="24" width="34" height="21" stroke="#ffffff" strokeWidth="2.2" fill="none" />
+            <Rect x="20" y="31" width="12" height="14" rx="1.5" stroke="#ffffff" strokeWidth="1.8" fill="none" />
+            <Rect x="11" y="27" width="7" height="7" rx="1" stroke="#ffffff" strokeWidth="1.5" fill="none" />
+            <Rect x="34" y="27" width="7" height="7" rx="1" stroke="#ffffff" strokeWidth="1.5" fill="none" />
           </Svg>
-          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#ffffff', textAlign: 'center' }}>Improve Efficiency</Text>
         </View>
-        <View style={{ width: 1, height: 50, backgroundColor: 'rgba(13,50,100,0.15)' }} />
+        <View style={{ width: 1, height: 50, backgroundColor: 'rgba(255,255,255,0.2)' }} />
         {/* Reduce Costs */}
         <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
-          <View style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: '#1255b0', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 20, color: '#1255b0', fontFamily: 'Helvetica-Bold', lineHeight: 1 }}>£</Text>
+          <View style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 20, color: '#ffffff', fontFamily: 'Helvetica-Bold', lineHeight: 1 }}>£</Text>
           </View>
-          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#ffffff', textAlign: 'center' }}>Reduce Costs</Text>
         </View>
-        <View style={{ width: 1, height: 50, backgroundColor: 'rgba(13,50,100,0.15)' }} />
+        <View style={{ width: 1, height: 50, backgroundColor: 'rgba(255,255,255,0.2)' }} />
         {/* Lower Emissions */}
         <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
           <Svg width="32" height="32" viewBox="0 0 52 52">
-            <Circle cx="26" cy="26" r="17" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-            <Line x1="9" y1="26" x2="43" y2="26" stroke="#1255b0" strokeWidth="1.5" />
-            <Line x1="26" y1="9" x2="26" y2="43" stroke="#1255b0" strokeWidth="1.5" />
-            <Path d="M26 9 Q13 26 26 43" stroke="#1255b0" strokeWidth="1.5" fill="none" />
-            <Path d="M26 9 Q39 26 26 43" stroke="#1255b0" strokeWidth="1.5" fill="none" />
-            <Path d="M11 18 Q26 13 41 18" stroke="#1255b0" strokeWidth="1.3" fill="none" />
-            <Path d="M11 34 Q26 39 41 34" stroke="#1255b0" strokeWidth="1.3" fill="none" />
+            <Circle cx="26" cy="26" r="17" stroke="#ffffff" strokeWidth="2.2" fill="none" />
+            <Line x1="9" y1="26" x2="43" y2="26" stroke="#ffffff" strokeWidth="1.5" />
+            <Line x1="26" y1="9" x2="26" y2="43" stroke="#ffffff" strokeWidth="1.5" />
+            <Path d="M26 9 Q13 26 26 43" stroke="#ffffff" strokeWidth="1.5" fill="none" />
+            <Path d="M26 9 Q39 26 26 43" stroke="#ffffff" strokeWidth="1.5" fill="none" />
+            <Path d="M11 18 Q26 13 41 18" stroke="#ffffff" strokeWidth="1.3" fill="none" />
+            <Path d="M11 34 Q26 39 41 34" stroke="#ffffff" strokeWidth="1.3" fill="none" />
           </Svg>
-          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Lower Emissions</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#ffffff', textAlign: 'center' }}>Lower Emissions</Text>
         </View>
       </View>
 

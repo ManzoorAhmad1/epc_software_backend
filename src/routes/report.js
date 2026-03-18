@@ -65,13 +65,16 @@ router.post(
       if (files?.photo?.[0]) {
         const wavePath = require('path').join(__dirname, '../../../frontend/renderer/public/images/coverPage.png');
         const W = 1190, H = 1682;
-        // Center white area between top wave (~330px) and bottom wave (~1300px)
-        const photoTop = 430, centerH = 870; // fill from lower down to bottom wave (430+870=1300)
+        const photoTop = 430, centerH = 870; // photo covers canvas 430–1300
 
-        // White background
-        const whiteBg = await sharp({
+        // Background: white top (header area) + dark navy bottom (so wave transitions blend into navy, no white bleed)
+        const bgSplit = 1200; // canvas px where navy starts
+        const navyStrip = await sharp({
+          create: { width: W, height: H - bgSplit, channels: 3, background: { r: 11, g: 48, b: 96 } }
+        }).png().toBuffer();
+        const bgCanvas = await sharp({
           create: { width: W, height: H, channels: 3, background: { r: 255, g: 255, b: 255 } }
-        }).jpeg({ quality: 95 }).toBuffer();
+        }).composite([{ input: navyStrip, top: bgSplit, left: 0 }]).jpeg({ quality: 95 }).toBuffer();
 
         // fit:'cover' zooms+crops image to fill exact area — no stretch, no white gaps
         const finalPhoto = await sharp(files.photo[0].buffer)
@@ -83,8 +86,8 @@ router.post(
           .resize(W, H, { fit: 'fill' })
           .toBuffer();
 
-        // Composite: white → photo centered in white area → wave on top
-        const composited = await sharp(whiteBg)
+        // Composite: bg (white+navy) → photo at center → wave on top
+        const composited = await sharp(bgCanvas)
           .composite([
             { input: finalPhoto, top: photoTop, left: 0 },
             { input: waveOverlay, top: 0, left: 0, blend: 'over' },
