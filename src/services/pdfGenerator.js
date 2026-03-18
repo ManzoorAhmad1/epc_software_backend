@@ -31,6 +31,16 @@ const {
   enhanceWithAI,
 } = require('./plainEnglish');
 
+const path = require('path');
+const fs = require('fs');
+let COVER_BG_DATA = null;
+try {
+  const imgPath = path.join(__dirname, '../../../frontend/renderer/public/images/coverPage.png');
+  COVER_BG_DATA = `data:image/png;base64,${fs.readFileSync(imgPath).toString('base64')}`;
+} catch (e) {
+  console.warn('[Cover] Background image not found:', e.message);
+}
+
 // Color scheme
 const COLORS = {
   deepForestGreen: '#113555',
@@ -602,127 +612,97 @@ function EPCScaleBar({ currentRating, potentialRating, currentScore, potentialSc
 
 function CoverPage({ data, propertyPhotoBase64 }) {
   return (
-    <Page size="A4" style={{ backgroundColor: '#dce8f4', fontFamily: 'Helvetica', flexDirection: 'column' }}>
+    <Page size="A4" style={{ backgroundColor: '#ffffff', fontFamily: 'Helvetica' }}>
 
-      {/* ── TOP-RIGHT BLUE WAVE (absolutely positioned, behind header text) ── */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 260 }}>
-        <Svg width="595" height="260" viewBox="0 0 595 260">
-          <Defs>
-            <LinearGradient id="blueMain" x1="595" y1="0" x2="200" y2="260" gradientUnits="userSpaceOnUse">
-              <Stop offset="0%" stopColor="#1060c0" />
-              <Stop offset="100%" stopColor="#0a3d96" />
-            </LinearGradient>
-            <LinearGradient id="silverRib" x1="595" y1="0" x2="250" y2="260" gradientUnits="userSpaceOnUse">
-              <Stop offset="0%" stopColor="#d0dff0" />
-              <Stop offset="60%" stopColor="#b8cfe8" />
-              <Stop offset="100%" stopColor="#a0bcd8" stopOpacity="0" />
-            </LinearGradient>
-          </Defs>
-          <Path d="M595 0 L595 260 Q521 226 421 170 Q322 114 211 46 Q136 6 75 0 Z" fill="url(#silverRib)" opacity="0.7" />
-          <Path d="M595 0 L595 240 Q508 200 409 143 Q316 91 217 32 Q161 6 112 0 Z" fill="url(#blueMain)" />
-          <Path d="M595 0 L595 176 Q533 143 458 100 Q384 59 322 22 Q285 6 254 0 Z" fill="#5a9ee0" opacity="0.45" />
-          <Path d="M595 240 Q508 200 409 143 Q316 91 217 32 Q161 6 112 0 L137 0 Q183 9 238 38 Q334 93 426 148 Q523 202 595 242 Z" fill="#7ab4e8" opacity="0.3" />
-        </Svg>
-      </View>
+      {/* BACKGROUND: composited photo+wave (or plain wave if no photo) */}
+      <Image
+        src={propertyPhotoBase64 || COVER_BG_DATA}
+        style={{ position: 'absolute', top: 0, left: 0, width: 595, height: 841 }}
+      />
 
-      {/* ── HEADER TEXT ── */}
-      <View style={{ paddingTop: 38, paddingLeft: 30, paddingRight: 30, paddingBottom: 18 }}>
-        <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Understanding</Text>
+      {/* HEADER TEXT - top-left with semi-transparent white background for readability */}
+      <View style={{ position: 'absolute', top: 20, left: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12 }}>
+        <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Understanding</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, marginBottom: 4, gap: 8 }}>
-          <View style={{ height: 2, width: 32, backgroundColor: '#8da8c0' }} />
-          <Text style={{ fontSize: 13, color: '#0b3060', fontStyle: 'italic' }}> the </Text>
-          <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#1358b8' }}>Energy</Text>
-          <View style={{ height: 2, width: 32, backgroundColor: '#8da8c0' }} />
+          <View style={{ height: 2, width: 28, backgroundColor: '#8da8c0' }} />
+          <Text style={{ fontSize: 12, color: '#0b3060', fontStyle: 'italic' }}> the </Text>
+          <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold', color: '#1358b8' }}>Energy</Text>
+          <View style={{ height: 2, width: 28, backgroundColor: '#8da8c0' }} />
         </View>
-        <Text style={{ fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.1 }}>Performance of</Text>
-        <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
+        <Text style={{ fontSize: 18, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.1 }}>Performance of</Text>
+        <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
       </View>
 
-      {/* ── PHOTO SECTION: full width, no card/band ── */}
-      <View style={{ height: 360, width: 595, overflow: 'hidden' }}>
-        {propertyPhotoBase64 ? (
-          <Image
-            src={propertyPhotoBase64}
-            style={{ width: 595, height: 360, objectFit: 'cover' }}
-          />
-        ) : (
-          <View style={{ width: 595, height: 360, backgroundColor: '#c8daea', alignItems: 'center', justifyContent: 'center' }}>
-            <Svg width="72" height="72" viewBox="0 0 72 72">
-              <Path d="M36 8 L66 30 V64 H6 V30 Z" stroke="#1255b0" strokeWidth="2.8" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-              <Rect x="26" y="42" width="20" height="22" rx="2" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-              <Rect x="14" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
-              <Rect x="46" y="35" width="12" height="12" rx="2" stroke="#1255b0" strokeWidth="2" fill="none" />
-              <Path d="M36 8 L36 2" stroke="#1255b0" strokeWidth="2" strokeLinecap="round" />
-            </Svg>
-            <Text style={{ fontSize: 10, color: '#1255b0', marginTop: 12, fontFamily: 'Helvetica' }}>Property Photo</Text>
-          </View>
-        )}
-      </View>
-
-      {/* ── ADDRESS SECTION — full width dark navy ── */}
-      <View style={{ width: 595, backgroundColor: '#0e2f5e', paddingHorizontal: 30, paddingVertical: 14, alignItems: 'center' }}>
+      {/* ── ADDRESS SECTION — positioned over the navy bottom wave ── */}
+      <View style={{
+        position: 'absolute',
+        bottom: 78,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 30,
+        paddingVertical: 10,
+        alignItems: 'center',
+      }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-          <View style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' }}>
-            <Svg width="12" height="14" viewBox="0 0 20 20">
+          <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' }}>
+            <Svg width="11" height="13" viewBox="0 0 20 20">
               <Path d="M10 1.5C6.96 1.5 4.5 3.96 4.5 7c0 4.62 5.5 11.5 5.5 11.5S15.5 11.62 15.5 7C15.5 3.96 13.04 1.5 10 1.5zm0 7.75a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5z" fill="#ffffff" />
             </Svg>
           </View>
-          <Text style={{ fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>
+          <Text style={{ fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>
             {data.propertyAddress || 'Property Address'}
           </Text>
         </View>
         {data.companyName ? (
-          <Text style={{ fontSize: 9, color: 'rgba(185,210,240,0.9)', marginTop: 1 }}>{data.companyName}</Text>
+          <Text style={{ fontSize: 9, color: 'rgba(210,228,250,0.95)', marginTop: 2 }}>{data.companyName}</Text>
         ) : null}
-
       </View>
 
-      {/* ── ICONS BAR — fills rest of page ── */}
-      <View style={{ flex: 1, width: 595, backgroundColor: '#dce8f4', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 }}>
-        {/* Improve Efficiency — simple house outline */}
-        <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
-          <Svg width="36" height="36" viewBox="0 0 52 52">
-            {/* Roof */}
+      {/* ── ICONS BAR — bottom strip ── */}
+      <View style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 72,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 10,
+        backgroundColor: 'rgba(220,232,244,0.92)',
+      }}>
+        {/* Improve Efficiency */}
+        <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+          <Svg width="32" height="32" viewBox="0 0 52 52">
             <Path d="M26 7 L46 24 H6 Z" stroke="#1255b0" strokeWidth="2.2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-            {/* Walls */}
             <Rect x="9" y="24" width="34" height="21" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-            {/* Door */}
             <Rect x="20" y="31" width="12" height="14" rx="1.5" stroke="#1255b0" strokeWidth="1.8" fill="none" />
-            {/* Left window */}
             <Rect x="11" y="27" width="7" height="7" rx="1" stroke="#1255b0" strokeWidth="1.5" fill="none" />
-            {/* Right window */}
             <Rect x="34" y="27" width="7" height="7" rx="1" stroke="#1255b0" strokeWidth="1.5" fill="none" />
           </Svg>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Improve Efficiency</Text>
         </View>
-        <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
-        {/* Reduce Costs — normal £ sign */}
-        <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
-          <View style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: '#1255b0', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 22, color: '#1255b0', fontFamily: 'Helvetica-Bold', lineHeight: 1 }}>£</Text>
+        <View style={{ width: 1, height: 50, backgroundColor: 'rgba(13,50,100,0.15)' }} />
+        {/* Reduce Costs */}
+        <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+          <View style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: '#1255b0', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 20, color: '#1255b0', fontFamily: 'Helvetica-Bold', lineHeight: 1 }}>£</Text>
           </View>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Reduce Costs</Text>
         </View>
-        <View style={{ width: 1, height: 60, backgroundColor: 'rgba(13,50,100,0.15)' }} />
-        {/* Lower Emissions — globe/earth icon */}
-        <View style={{ flex: 1, alignItems: 'center', gap: 5 }}>
-          <Svg width="36" height="36" viewBox="0 0 52 52">
-            {/* Outer circle */}
+        <View style={{ width: 1, height: 50, backgroundColor: 'rgba(13,50,100,0.15)' }} />
+        {/* Lower Emissions */}
+        <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+          <Svg width="32" height="32" viewBox="0 0 52 52">
             <Circle cx="26" cy="26" r="17" stroke="#1255b0" strokeWidth="2.2" fill="none" />
-            {/* Equator */}
             <Line x1="9" y1="26" x2="43" y2="26" stroke="#1255b0" strokeWidth="1.5" />
-            {/* Vertical centre meridian */}
             <Line x1="26" y1="9" x2="26" y2="43" stroke="#1255b0" strokeWidth="1.5" />
-            {/* Left curved meridian */}
             <Path d="M26 9 Q13 26 26 43" stroke="#1255b0" strokeWidth="1.5" fill="none" />
-            {/* Right curved meridian */}
             <Path d="M26 9 Q39 26 26 43" stroke="#1255b0" strokeWidth="1.5" fill="none" />
-            {/* Upper latitude curve */}
             <Path d="M11 18 Q26 13 41 18" stroke="#1255b0" strokeWidth="1.3" fill="none" />
-            {/* Lower latitude curve */}
             <Path d="M11 34 Q26 39 41 34" stroke="#1255b0" strokeWidth="1.3" fill="none" />
           </Svg>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Lower Emissions</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'center' }}>Lower Emissions</Text>
         </View>
       </View>
 

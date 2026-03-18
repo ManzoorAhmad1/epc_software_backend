@@ -63,18 +63,36 @@ router.post(
       let propertyPhotoBase64;
 
       if (files?.photo?.[0]) {
-        // Detect real MIME from magic bytes — browser can send wrong content-type (e.g. WebP labeled as JPEG)
-        let buf = files.photo[0].buffer;
-        const mime = detectImageMime(buf);
-        console.log('[Photo] detected mime:', mime, '(multer said:', files.photo[0].mimetype + ')');
-        // Convert WebP/GIF to JPEG since react-pdf renderer requires JPEG or PNG
-        if (mime === 'image/webp' || mime === 'image/gif') {
-          buf = await sharp(buf).jpeg({ quality: 92 }).toBuffer();
-          console.log('[Photo] converted', mime, '→ image/jpeg');
-          propertyPhotoBase64 = `data:image/jpeg;base64,${buf.toString('base64')}`;
-        } else {
-          propertyPhotoBase64 = `data:${mime};base64,${buf.toString('base64')}`;
-        }
+        const wavePath = require('path').join(__dirname, '../../../frontend/renderer/public/images/coverPage.png');
+        const W = 1190, H = 1682;
+        // Center white area between top wave (~330px) and bottom wave (~1300px)
+        const photoTop = 430, centerH = 870; // fill from lower down to bottom wave (430+870=1300)
+
+        // White background
+        const whiteBg = await sharp({
+          create: { width: W, height: H, channels: 3, background: { r: 255, g: 255, b: 255 } }
+        }).jpeg({ quality: 95 }).toBuffer();
+
+        // fit:'cover' zooms+crops image to fill exact area — no stretch, no white gaps
+        const finalPhoto = await sharp(files.photo[0].buffer)
+          .resize(W, centerH, { fit: 'cover', position: 'centre' })
+          .toBuffer();
+
+        // Wave overlay resized to full canvas
+        const waveOverlay = await sharp(wavePath)
+          .resize(W, H, { fit: 'fill' })
+          .toBuffer();
+
+        // Composite: white → photo centered in white area → wave on top
+        const composited = await sharp(whiteBg)
+          .composite([
+            { input: finalPhoto, top: photoTop, left: 0 },
+            { input: waveOverlay, top: 0, left: 0, blend: 'over' },
+          ])
+          .jpeg({ quality: 88 })
+          .toBuffer();
+        console.log('[Photo] composited (white+photo+wave), size:', composited.length);
+        propertyPhotoBase64 = `data:image/jpeg;base64,${composited.toString('base64')}`;
       } else if (req.body.mapImageBase64) {
         // Canvas screenshot sent directly from frontend (data URI string) — preferred
         propertyPhotoBase64 = req.body.mapImageBase64;

@@ -489,7 +489,7 @@ function extractAssessorDetails(text) {
   return {
     assessorName: assessorName || 'EPC Assessor',
     assessmentDate: assessmentDate || new Date().toLocaleDateString('en-GB'),
-    companyName: companyName || 'EPC Assessment Services',
+    companyName: companyName || 'DOC Surveying Limited',
     assessorContact: assessorContact || '',
   };
 }
@@ -604,7 +604,7 @@ ${rawText.slice(0, 6000)}`;
       : [],
     assessorName: parsed.assessorName || 'EPC Assessor',
     assessmentDate: parsed.assessmentDate || new Date().toLocaleDateString('en-GB'),
-    companyName: parsed.companyName || 'EPC Assessment Services',
+    companyName: parsed.companyName || 'DOC Surveying Limited',
     assessorContact: parsed.assessorContact || '',
     rawText,
   };
