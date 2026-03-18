@@ -633,6 +633,13 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
       </View>
 
+      {/* COMPANY NAME - top right */}
+      {data.companyName ? (
+        <View style={{ position: 'absolute', top: 20, right: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 }}>
+          <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'right' }}>{data.companyName}</Text>
+        </View>
+      ) : null}
+
       {/* ── ADDRESS SECTION — positioned over the navy bottom wave ── */}
       <View style={{
         position: 'absolute',
@@ -685,7 +692,7 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         <View style={{ width: 1, height: 50, backgroundColor: 'rgba(255,255,255,0.2)' }} />
         {/* Reduce Costs */}
         <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
-          <View style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 32, height: 32, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontSize: 20, color: '#ffffff', fontFamily: 'Helvetica-Bold', lineHeight: 1 }}>£</Text>
           </View>
           <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#ffffff', textAlign: 'center' }}>Reduce Costs</Text>
