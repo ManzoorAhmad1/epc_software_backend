@@ -50,7 +50,7 @@ function explainFeature(feature) {
     const hasDualRoof = description.includes('|');
     const has300mm = lowerDesc.includes('300 mm') || lowerDesc.includes('300mm');
     if (hasDualRoof && has300mm) {
-      return `Your roof setup is: ${description}. It will not benefit by having anymore insulation in the extension loft, the main loft should be insulated to 300mm.`;
+      return `Your roof setup is: ${description}. It will not benefit you to add any more insulation in the extension loft, the main loft should be insulated to 300 mm.`;
     }
     return `Your roof setup is: ${description}. Check with an assessor whether additional insulation would be beneficial.`;
   }
@@ -68,7 +68,7 @@ function explainFeature(feature) {
     if (lowerDesc.includes('gas')) {
       return `The property uses a gas heating system. Gas is currently one of the more cost-effective ways to heat a home, though upgrading to a modern condensing boiler can improve efficiency further. (If it is a condensing boiler it will be efficient.)`;
     } else if (lowerDesc.includes('electric')) {
-      return `The home uses electric heating. This can be expensive to run — upgrading to a heat pump or better controls may help reduce costs.`;
+      return `The home uses electric heating.`;
     }
     return `Your main heating system is: ${description}.`;
   }

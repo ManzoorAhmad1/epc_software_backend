@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   pageBody: {
     paddingHorizontal: 30,
     paddingTop: 20,
-    paddingBottom: 46,
+    paddingBottom: 24,
   },
   // ── EPC Scale bar ──
   scaleContainer: {
@@ -596,11 +596,15 @@ function EPCScaleBar({ currentRating, potentialRating, currentScore, potentialSc
             {band.min}–{band.max}
           </Text>
           {currentRating.toUpperCase() === band.letter && (
-            <Text style={styles.currentMarker}>◄ Current {currentScore}</Text>
+            <View style={{ marginLeft: 8, backgroundColor: COLORS.deepForestGreen, borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 }}>
+              <Text style={{ color: COLORS.white, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Current {currentScore}</Text>
+            </View>
           )}
           {potentialRating.toUpperCase() === band.letter &&
-            potentialRating !== currentRating && (
-              <Text style={styles.potentialMarker}>◄ Potential {potentialScore}</Text>
+            potentialRating.toUpperCase() !== currentRating.toUpperCase() && (
+              <View style={{ marginLeft: 8, backgroundColor: COLORS.energyGreen, borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 }}>
+                <Text style={{ color: COLORS.white, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Potential {potentialScore}</Text>
+              </View>
             )}
         </View>
       ))}
@@ -621,7 +625,7 @@ function CoverPage({ data, propertyPhotoBase64 }) {
       />
 
       {/* HEADER TEXT - top-left with semi-transparent white background for readability */}
-      <View style={{ position: 'absolute', top: 20, left: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12 }}>
+      <View style={{ position: 'absolute', top: 20, left: 20, backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12 }}>
         <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Understanding</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, marginBottom: 4, gap: 8 }}>
           <View style={{ height: 2, width: 28, backgroundColor: '#8da8c0' }} />
@@ -633,10 +637,10 @@ function CoverPage({ data, propertyPhotoBase64 }) {
         <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold', color: '#0b3060', lineHeight: 1.0 }}>Your Home</Text>
       </View>
 
-      {/* COMPANY NAME - top right */}
+      {/* COMPANY NAME — top-right, rendered AFTER the wave image so always paints on top */}
       {data.companyName ? (
-        <View style={{ position: 'absolute', top: 20, right: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 }}>
-          <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#0b3060', textAlign: 'right' }}>{data.companyName}</Text>
+        <View style={{ position: 'absolute', top: 40, right: 140, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, maxWidth: 180 }}>
+          <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#0b3060' }}>{data.companyName}</Text>
         </View>
       ) : null}
 
@@ -830,7 +834,7 @@ function KeyFeaturesPage({ data }) {
         </Text>
 
         {data.features.slice(0, 8).map((feature) => (
-          <View key={feature.name} style={styles.featureCard}>
+          <View key={feature.name} style={styles.featureCard} wrap={false}>
             <View style={styles.featureCardHeader}>
               <Text style={styles.featureCardHeaderText}>{feature.name}</Text>
             </View>
@@ -866,28 +870,28 @@ function EnvironmentalImpactPage({ data }) {
           <View
             style={[
               styles.co2Box,
-              { backgroundColor: getRatingColor(data.environmentalRatingCurrent) + '22' },
+              { backgroundColor: getRatingColor(data.environmentalRatingCurrent || 'D') + '22' },
             ]}
           >
-            <Text style={[styles.co2BoxLabel, { color: getRatingColor(data.environmentalRatingCurrent) }]}>
+            <Text style={[styles.co2BoxLabel, { color: getRatingColor(data.environmentalRatingCurrent || 'D') }]}>
               Current CO₂ Emissions
             </Text>
             <Text
               style={[
                 styles.co2BoxValue,
-                { color: getRatingColor(data.environmentalRatingCurrent) },
+                { color: getRatingColor(data.environmentalRatingCurrent || 'D') },
               ]}
             >
-              {data.currentCO2.replace(' per year', '')}
+              {(data.currentCO2 || 'Not available').replace(' per year', '')}
             </Text>
             <Text style={[styles.co2BoxSub, { color: COLORS.darkGrey }]}>Per Year</Text>
             <Text
               style={[
                 styles.co2BoxValue,
-                { color: getRatingColor(data.environmentalRatingCurrent), fontSize: 28, marginTop: 8 },
+                { color: getRatingColor(data.environmentalRatingCurrent || 'D'), fontSize: 28, marginTop: 8 },
               ]}
             >
-              {data.environmentalRatingCurrent}
+              {data.environmentalRatingCurrent || 'N/A'}
             </Text>
             <Text style={[styles.co2BoxSub, { color: COLORS.mediumGrey }]}>Rating</Text>
           </View>
@@ -895,13 +899,13 @@ function EnvironmentalImpactPage({ data }) {
           <View
             style={[
               styles.co2Box,
-              { backgroundColor: getRatingColor(data.environmentalRatingPotential) + '22' },
+              { backgroundColor: getRatingColor(data.environmentalRatingPotential || 'C') + '22' },
             ]}
           >
             <Text
               style={[
                 styles.co2BoxLabel,
-                { color: getRatingColor(data.environmentalRatingPotential) },
+                { color: getRatingColor(data.environmentalRatingPotential || 'C') },
               ]}
             >
               Potential CO₂ Emissions
@@ -909,19 +913,19 @@ function EnvironmentalImpactPage({ data }) {
             <Text
               style={[
                 styles.co2BoxValue,
-                { color: getRatingColor(data.environmentalRatingPotential) },
+                { color: getRatingColor(data.environmentalRatingPotential || 'C') },
               ]}
             >
-              {data.potentialCO2.replace(' per year', '')}
+              {(data.potentialCO2 || 'Not available').replace(' per year', '')}
             </Text>
             <Text style={[styles.co2BoxSub, { color: COLORS.darkGrey }]}>Per Year</Text>
             <Text
               style={[
                 styles.co2BoxValue,
-                { color: getRatingColor(data.environmentalRatingPotential), fontSize: 28, marginTop: 8 },
+                { color: getRatingColor(data.environmentalRatingPotential || 'C'), fontSize: 28, marginTop: 8 },
               ]}
             >
-              {data.environmentalRatingPotential}
+              {data.environmentalRatingPotential || 'N/A'}
             </Text>
             <Text style={[styles.co2BoxSub, { color: COLORS.mediumGrey }]}>Rating</Text>
           </View>
@@ -939,8 +943,8 @@ function EnvironmentalImpactPage({ data }) {
           Environmental impact is rated on the same A to G scale as energy efficiency. An A
           rating means very low CO₂ emissions, while a G rating means very high emissions.
           If all improvements in this report were carried out, your home's environmental
-          impact rating could improve from {data.environmentalRatingCurrent} to{' '}
-          {data.environmentalRatingPotential}.
+          impact rating could improve from {data.environmentalRatingCurrent || 'N/A'} to{' '}
+          {data.environmentalRatingPotential || 'N/A'}.
         </Text>
       </View>
       <PageFooter pageNum={5} address={data.propertyAddress} />
@@ -964,7 +968,7 @@ function RecommendedImprovementsPage({ data }) {
           const { plainTitle, plainDescription } =
             data.aiImprovementExplanations?.[index] ?? explainImprovement(improvement);
           return (
-            <View key={index} style={styles.improvementCard}>
+            <View key={index} style={styles.improvementCard} wrap={false}>
               <View style={styles.improvementHeader}>
                 <Text style={styles.improvementHeaderText}>{plainTitle}</Text>
               </View>

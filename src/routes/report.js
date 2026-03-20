@@ -64,35 +64,36 @@ router.post(
 
       if (files?.photo?.[0]) {
         const wavePath = require('path').join(__dirname, '../assets/ss.png');
-        const W = 1190, H = 1682;
-        const photoTop = 430, centerH = 870; // photo covers canvas 430–1300
+        // 3x canvas for full HD sharpness (595×841 PDF pt × 3 = 1785×2523)
+        const W = 1785, H = 2523;
+        const photoTop = 645, centerH = 1305; // scaled: 430*1.5→645, 870*1.5→1305
 
-        // Background: white top (header area) + dark navy bottom (so wave transitions blend into navy, no white bleed)
-        const bgSplit = 1200; // canvas px where navy starts
+        // Background: white top + dark navy bottom
+        const bgSplit = 1800;
         const navyStrip = await sharp({
           create: { width: W, height: H - bgSplit, channels: 3, background: { r: 11, g: 48, b: 96 } }
         }).png().toBuffer();
         const bgCanvas = await sharp({
           create: { width: W, height: H, channels: 3, background: { r: 255, g: 255, b: 255 } }
-        }).composite([{ input: navyStrip, top: bgSplit, left: 0 }]).jpeg({ quality: 95 }).toBuffer();
+        }).composite([{ input: navyStrip, top: bgSplit, left: 0 }]).png().toBuffer();
 
-        // fit:'cover' zooms+crops image to fill exact area — no stretch, no white gaps
+        // fit:'cover' — sharp lanczos3 upscale for HD quality
         const finalPhoto = await sharp(files.photo[0].buffer)
-          .resize(W, centerH, { fit: 'cover', position: 'centre' })
+          .resize(W, centerH, { fit: 'cover', position: 'centre', kernel: sharp.kernel.lanczos3 })
           .toBuffer();
 
-        // Wave overlay resized to full canvas
+        // Wave overlay at 3x for crisp curves
         const waveOverlay = await sharp(wavePath)
-          .resize(W, H, { fit: 'fill' })
+          .resize(W, H, { fit: 'fill', kernel: sharp.kernel.lanczos3 })
           .toBuffer();
 
-        // Composite: bg (white+navy) → photo at center → wave on top
+        // Composite: bg → photo → wave
         const composited = await sharp(bgCanvas)
           .composite([
             { input: finalPhoto, top: photoTop, left: 0 },
             { input: waveOverlay, top: 0, left: 0, blend: 'over' },
           ])
-          .jpeg({ quality: 88 })
+          .jpeg({ quality: 98 })
           .toBuffer();
         console.log('[Photo] composited (white+photo+wave), size:', composited.length);
         propertyPhotoBase64 = `data:image/jpeg;base64,${composited.toString('base64')}`;
@@ -134,7 +135,8 @@ router.post(
 
       // Override assessor details if provided in form
       if (req.body.assessorName) epcData.assessorName = req.body.assessorName;
-      if (req.body.companyName) epcData.companyName = req.body.companyName;
+      // Always override companyName if sent (even empty string clears it)
+      if (req.body.companyName !== undefined) epcData.companyName = req.body.companyName || epcData.companyName;
       if (req.body.assessorContact) epcData.assessorContact = req.body.assessorContact;
       if (req.body.propertyAddress) epcData.propertyAddress = req.body.propertyAddress;
 
