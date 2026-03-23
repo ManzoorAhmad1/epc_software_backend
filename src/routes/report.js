@@ -143,14 +143,21 @@ router.post(
       // Generate PDF report
       const pdfBuffer = await generateEPCReport(epcData, propertyPhotoBase64);
 
-      // Save to uploads folder with timestamp name
-      const filename = `epc-report-${Date.now()}.pdf`;
+      // Save to uploads folder — named after property address
+      const safeAddress = (epcData.propertyAddress || 'property')
+        .replace(/[/\\:*?"<>|]/g, ' ')  // remove filesystem-illegal chars
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 80);
+      const filename = `Energy Report - ${safeAddress}.pdf`;
       const filepath = path.join(UPLOADS_DIR, filename);
       fs.writeFileSync(filepath, pdfBuffer);
 
       // Return the PDF as download
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      // RFC 5987 encoding for non-ASCII characters in filename
+      const encodedFilename = encodeURIComponent(filename);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${encodedFilename}`);
       res.setHeader('X-EPC-Address', encodeURIComponent(epcData.propertyAddress));
       res.setHeader('X-Filename', filename);
       res.send(pdfBuffer);
